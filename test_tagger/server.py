@@ -3,6 +3,8 @@ import socket
 from PIL import Image
 from torchvision import transforms
 from torchvision.models import AlexNet_Weights, alexnet
+import time
+import threading
 
 # import ssl
 # ssl._create_default_https_context = ssl._create_unverified_context
@@ -21,24 +23,22 @@ preprocess = transforms.Compose([
                          std=[0.229, 0.224, 0.225]),
 ])
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    print("Listen incoming connections")
-    s.bind((HOST, PORT))
-    s.listen()
-    conn, addr = s.accept()
+
+def session(conn, addr):
+    id = threading.get_ident()
+    # time.sleep(10) mi serve per simulare più connessioni insieme
     with conn:
         print(f'Connected with {addr}')
         size_b = conn.recv(10)
         size = int.from_bytes(size_b, "big")
         print(f"Image's dimension: {size}")
-        with open("server_image.jpeg", "wb") as f:
+        with open(f"server_image_{id}.jpeg", "wb") as f:
             while size > 0:
                 image_data = conn.recv(2048)
                 f.write(image_data)
                 size = size - len(image_data)
-
-        print("Server image received")
-        input_image = Image.open("server_image.jpeg")
+            print("Server image received")
+        input_image = Image.open(f"server_image_{id}.jpeg")
         input_tensor = preprocess(input_image)
         input_batch = input_tensor.unsqueeze(0)
 
@@ -60,3 +60,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
         print("Send response to client")
         conn.sendall(categories[top5_catid[0]].encode())
+
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    print("Listen incoming connections")
+    s.bind((HOST, PORT))
+    s.listen()
+    while True:
+        conn, addr = s.accept()
+        print("Start thread")
+        threading.Thread(target=session, args=(conn, addr)).start()
