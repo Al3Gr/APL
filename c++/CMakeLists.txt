@@ -4,10 +4,10 @@ project(Progetto)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(Progetto
-        c++/server.cpp
-        c++/SocketTCP.cpp
-        c++/SocketTCP.h
-        c++/personal_exception/SocketException.h)
+        server.cpp
+        SocketTCP.cpp
+        SocketTCP.h
+        personal_exception/SocketException.h)
 
 find_package(unofficial-restbed CONFIG REQUIRED)
 target_link_libraries(Progetto PRIVATE unofficial::restbed::restbed)
