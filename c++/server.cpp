@@ -3,11 +3,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <restbed>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include "fstream"
-#include "iostream"
-#include <arpa/inet.h>
+#include "SocketTCP.h"
 
 using namespace std;
 using namespace restbed;
@@ -42,34 +38,33 @@ void post_method_handler( const shared_ptr< Session > session )
 
     session->fetch( content_length, [ request ]( const shared_ptr< Session > session, const Bytes & body )
     {
-        FILE* fp = fopen("immagine.jpeg", "wb");
         char buffer[1024];
-        struct sockaddr_in address;
-        address.sin_family = AF_INET;
-        address.sin_port = htons(10001);
-        address.sin_addr.s_addr = inet_addr("127.0.0.1");
-        fwrite(body.data(), 1, body.size(), fp);
-        int sockid = socket(AF_INET, SOCK_STREAM, 0);
+        auto size = body.size();
+        auto data = body.data();
 
-        if (connect(sockid, (struct sockaddr*)&address, sizeof(struct sockaddr_in) ) < 0) {
-            printf("\nConnection Failed \n");
-            return -1;
+        try {
+            SocketTCP socket("127.0.0.1", 10001);
+            socket.socketConnect();
+            socket.socketSend(&size, sizeof(size));
+            socket.socketSend(data, size);
+            socket.socketRecv(buffer, 1024);
+            //socket.~SocketTCP();
+        } catch(SocketException& e){
+            fprintf(stderr, "%s\n", e.what());
         }
-        auto b = body.size();
-        send(sockid, (void*)&b, sizeof(b), 0);
-        send(sockid, (void*)body.data(), body.size(), 0);
-        recv(sockid, buffer, 1024, 0);
+
         session->close( OK, buffer, { { "Content-Length", to_string(strlen(buffer))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
     } );
 }
 
 void service_ready_handler( Service& )
 {
-    fprintf( stderr, "Hey! The service is up and running." );
+    fprintf( stderr, "Hey! The service is up and running.\n" );
 }
 
 int main( const int, const char** )
 {
+
     // Resource: rappresenta un endpoint di comunicazione
     auto resource = make_shared< Resource >( );
     resource->set_path( "/resource" );
@@ -99,6 +94,8 @@ int main( const int, const char** )
     service->set_ready_handler( service_ready_handler );
     // avvia il servizio con le impostazioni (settings) fornite
     service->start( settings );
+
+
 
     return EXIT_SUCCESS;
 }

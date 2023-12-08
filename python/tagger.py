@@ -30,16 +30,10 @@ def session(conn, addr):
     with conn:
         print(f'Connected with {addr}')
         size_b = conn.recv(8)
-        # print(f"Image's dimension: {size_b}")
         size = int.from_bytes(size_b, "little")
         print(f"Image's dimension: {size}")
         with open(f"server_image_{id}.jpeg", "wb") as f:
-            # print(size)
-            # image_data = conn.recv(size)
-            # print(image_data)
-            # f.write(image_data)
             while size > 0:
-                # print("elaboro")
                 image_data = conn.recv(2048)
                 f.write(image_data)
                 size = size - len(image_data)

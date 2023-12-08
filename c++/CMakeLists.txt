@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(Progetto
         server.cpp
-        SocketTCP.cpp
         SocketTCP.h
         personal_exception/SocketException.h)
 
