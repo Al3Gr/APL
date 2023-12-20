@@ -7,15 +7,15 @@ void MongoDB::initDB() {
     auto* instance = new mongocxx::instance();
 }
 
-void MongoDB::connect(std::string &hostname, int port, std::string& database, std::string& collection) {
+void MongoDB::connect(const std::string &hostname, const int port, const std::string& database, const std::string& collection) {
     //mongocxx::instance instance{};
-    auto *uri = new mongocxx::uri("mongodb://localhost:8081");
+    auto *uri = new mongocxx::uri("mongodb:/"+hostname+":"+std::to_string(port));
     auto *client = new mongocxx::client(*uri);
     mongocxx::database db = (*client)[database];
     coll = db[collection];
 }
 
-void MongoDB::signup(std::string& username, std::string& pwd) noexcept(false){
+void MongoDB::signup(const std::string& username, const std::string& pwd) noexcept(false){
     bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> doc_value = bsoncxx::builder::basic::make_document(
                 bsoncxx::builder::basic::kvp("username", username),
                 bsoncxx::builder::basic::kvp("password", pwd)
@@ -27,7 +27,7 @@ void MongoDB::signup(std::string& username, std::string& pwd) noexcept(false){
     }
 }
 
-void MongoDB::login(std::string &username, std::string &pwd) noexcept(false){
+void MongoDB::login(const std::string &username, const std::string &pwd) noexcept(false){
     bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> doc_value = bsoncxx::builder::basic::make_document(
             bsoncxx::builder::basic::kvp("username", username),
             bsoncxx::builder::basic::kvp("password", pwd)
@@ -40,3 +40,5 @@ void MongoDB::login(std::string &username, std::string &pwd) noexcept(false){
         std::cout << "TOKEN";
     }
 }
+
+

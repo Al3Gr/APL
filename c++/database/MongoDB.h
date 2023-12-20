@@ -10,9 +10,9 @@
 class MongoDB {
 public:
     static void initDB();
-    static void connect(std::string& hostname, int port, std::string& database, std::string& collection);
-    static void signup(std::string& username, std::string& pwd) noexcept(false);
-    static void login(std::string& username, std::string& pwd) noexcept(false);
+    static void connect(const std::string& hostname, const int port, const std::string& database, const std::string& collection);
+    static void signup(const std::string& username, const std::string& pwd) noexcept(false);
+    static void login(const std::string& username, const std::string& pwd) noexcept(false);
     void uploadImage();
 
 private:

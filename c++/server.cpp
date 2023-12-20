@@ -1,11 +1,15 @@
 #include <thread>
 #include <memory>
-#include <chrono>
 #include <cstdlib>
 #include <restbed>
+#include "database/MongoDB.h"
+#include <nlohmann/json.hpp>
 #include "SocketTCP.h"
 
+using json = nlohmann::json;
+
 using namespace std;
+
 using namespace restbed;
 
 void get_method_handler( const shared_ptr< Session > session )
@@ -20,6 +24,24 @@ void get_name_handler(const shared_ptr< Session >  session){
     const auto args = req->get_query_parameter("namem", "Pippo");
     const std::string size_argument = to_string(args.length());
     session->close( OK, args, { { "Content-Length", size_argument }, { "Connection", "close" } } );
+}
+
+void signup_method_handler(const shared_ptr< Session > session){
+    //MongoDB::initDB();
+    //MongoDB::connect("localhost", 8081, "apl", "users");
+    //MongoDB::signup("Alessandro", "Alessandro");
+    const auto request = session->get_request();
+
+    size_t content_length = request->get_header( "Content-Length", 0 );
+    session->fetch( content_length, [ request ]( const shared_ptr< Session > session, const Bytes & body )
+    {
+
+        json requestJson = json::parse(body.data());
+        std::cout << requestJson["username"];
+
+    } );
+
+
 }
 
 
@@ -58,7 +80,7 @@ void service_ready_handler( Service& )
     fprintf( stderr, "Hey! The server is up and running.\n" );
 }
 
-int main0( const int, const char** )
+int main( const int, const char** )
 {
 
     // Resource: rappresenta un endpoint di comunicazione
@@ -66,6 +88,10 @@ int main0( const int, const char** )
     resource->set_path( "/resource" );
     resource->set_method_handler( "GET", get_method_handler );
 
+    // Endpoint POST per il caricamento delle immagini
+    auto signup = make_shared<Resource>();
+    signup->set_path("/signup");
+    signup->set_method_handler("POST", signup_method_handler);
 
     // Endpoint POST per il caricamento delle immagini
     auto upload = make_shared<Resource>();
@@ -81,7 +107,7 @@ int main0( const int, const char** )
     auto service = make_shared< Service >( );
     // Publish a RESTful resource for public consumption;
     service->publish( upload );
-    service->publish(resource);
+    service->publish(signup);
     // Set a handler to be invoked once the service is up and ready to serve incoming HTTP requests.
     // viene invocato l'handler quando il servizio è up
     service->set_ready_handler( service_ready_handler );
