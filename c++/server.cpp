@@ -22,19 +22,15 @@ void get_name_handler(const shared_ptr< Session >  session){
     session->close( OK, args, { { "Content-Length", size_argument }, { "Connection", "close" } } );
 }
 
-void get_metodo_handler( const shared_ptr< Session > session )
-{
-    std::this_thread::sleep_for (chrono::seconds(10));
-    session->close( OK, "Hello, Thread!", { { "Content-Length", "13" }, { "Connection", "close" } } );
-}
 
-void post_method_handler( const shared_ptr< Session > session )
+void upload_method_handler( const shared_ptr< Session > session )
 {
     const auto request = session->get_request( );
 
     size_t content_length = 0;
     content_length = request->get_header( "Content-Length", content_length );
 
+    fprintf( stderr, "Content Length: %zu.\n", content_length );
 
     session->fetch( content_length, [ request ]( const shared_ptr< Session > session, const Bytes & body )
     {
@@ -59,10 +55,10 @@ void post_method_handler( const shared_ptr< Session > session )
 
 void service_ready_handler( Service& )
 {
-    fprintf( stderr, "Hey! The service is up and running.\n" );
+    fprintf( stderr, "Hey! The server is up and running.\n" );
 }
 
-int main( const int, const char** )
+int main0( const int, const char** )
 {
 
     // Resource: rappresenta un endpoint di comunicazione
@@ -70,14 +66,11 @@ int main( const int, const char** )
     resource->set_path( "/resource" );
     resource->set_method_handler( "GET", get_method_handler );
 
-/*    auto reso = make_shared< Resource >( );
-    reso->set_path( "/reso" );
-    reso->set_method_handler( "POST", post_method_handler );*/
 
-
-    auto name = make_shared<Resource>();
-    name->set_path("/postm");
-    name->set_method_handler("POST", post_method_handler);
+    // Endpoint POST per il caricamento delle immagini
+    auto upload = make_shared<Resource>();
+    upload->set_path("/upload");
+    upload->set_method_handler("POST", upload_method_handler);
 
     // Settings: rappresenta la configurazione del servizio
     auto settings = make_shared< Settings >( );
@@ -87,7 +80,7 @@ int main( const int, const char** )
 
     auto service = make_shared< Service >( );
     // Publish a RESTful resource for public consumption;
-    service->publish( name );
+    service->publish( upload );
     service->publish(resource);
     // Set a handler to be invoked once the service is up and ready to serve incoming HTTP requests.
     // viene invocato l'handler quando il servizio è up

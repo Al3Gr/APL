@@ -1,9 +1,9 @@
 import torch
 import socket
+from mongoDB import MongoDB
 from PIL import Image
 from torchvision import transforms
 from torchvision.models import AlexNet_Weights, alexnet
-import time
 import threading
 
 # import ssl
@@ -26,7 +26,6 @@ preprocess = transforms.Compose([
 
 def session(conn, addr):
     id = threading.get_ident()
-    # time.sleep(10) mi serve per simulare più connessioni insieme
     with conn:
         print(f'Connected with {addr}')
         size_b = conn.recv(8)
