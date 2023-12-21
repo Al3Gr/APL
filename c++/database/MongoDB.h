@@ -8,15 +8,23 @@
 #include "../exceptions/LoginException.h"
 
 class MongoDB {
+private:
+    mongocxx::instance *instance;
+    mongocxx::database database;
+    mongocxx::collection collection;
+
+    static MongoDB* INSTANCE;
+
+    MongoDB();
+
 public:
-    static void initDB();
-    static void connect(const std::string& hostname, const int port, const std::string& database, const std::string& collection);
-    static void signup(const std::string& username, const std::string& pwd) noexcept(false);
-    static void login(const std::string& username, const std::string& pwd) noexcept(false);
+    static MongoDB* getInstance();
+    void connectDB(const std::string& hostname, const int port, const std::string& databaseName);
+    void setCollection(const std::string& collectionName);
+    void signup(const std::string& username, const std::string& pwd) noexcept(false);
+    void login(const std::string& username, const std::string& pwd) noexcept(false);
     void uploadImage();
 
-private:
-     static mongocxx::collection coll;
 
 };
 

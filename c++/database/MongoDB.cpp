@@ -1,18 +1,26 @@
 #include "MongoDB.h"
 
-mongocxx::collection MongoDB::coll;
+MongoDB* MongoDB::INSTANCE;
 
-
-void MongoDB::initDB() {
-    auto* instance = new mongocxx::instance();
+ MongoDB::MongoDB() {
+    instance = new mongocxx::instance();
 }
 
-void MongoDB::connect(const std::string &hostname, const int port, const std::string& database, const std::string& collection) {
-    //mongocxx::instance instance{};
-    auto *uri = new mongocxx::uri("mongodb:/"+hostname+":"+std::to_string(port));
+MongoDB* MongoDB::getInstance() {
+    if(INSTANCE == nullptr){
+        INSTANCE = new MongoDB();
+    }
+    return INSTANCE;
+}
+
+void MongoDB::connectDB(const std::string &hostname, const int port, const std::string& databaseName) {
+    auto *uri = new mongocxx::uri("mongodb://"+hostname+":"+std::to_string(port));
     auto *client = new mongocxx::client(*uri);
-    mongocxx::database db = (*client)[database];
-    coll = db[collection];
+    database = (*client)[databaseName];
+}
+
+void MongoDB::setCollection(const std::string &collectionName) {
+    collection = database[collectionName];
 }
 
 void MongoDB::signup(const std::string& username, const std::string& pwd) noexcept(false){
@@ -21,7 +29,7 @@ void MongoDB::signup(const std::string& username, const std::string& pwd) noexce
                 bsoncxx::builder::basic::kvp("password", pwd)
             );
     try {
-        auto insert_one_result = coll.insert_one(doc_value);
+        auto insert_one_result = collection.insert_one(doc_value);
     } catch (mongocxx::bulk_write_exception& e) {
         throw e;
     }
@@ -32,7 +40,7 @@ void MongoDB::login(const std::string &username, const std::string &pwd) noexcep
             bsoncxx::builder::basic::kvp("username", username),
             bsoncxx::builder::basic::kvp("password", pwd)
     );
-    auto find_one_result = coll.find_one(doc_value);
+    auto find_one_result = collection.find_one(doc_value);
     if(!find_one_result){
         throw LoginException("User non presente");
     }

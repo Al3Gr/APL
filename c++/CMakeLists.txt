@@ -12,7 +12,9 @@ add_executable(Progetto
         database/MongoDB.cpp
         database/MongoDB.h
         test.cpp
-        exceptions/LoginException.h)
+        exceptions/LoginException.h
+        handler/Handler.cpp
+        handler/Handler.h)
 
 find_package(unofficial-restbed CONFIG REQUIRED)
 find_package(CURL REQUIRED)

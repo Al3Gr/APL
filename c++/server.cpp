@@ -27,17 +27,22 @@ void get_name_handler(const shared_ptr< Session >  session){
 }
 
 void signup_method_handler(const shared_ptr< Session > session){
-    //MongoDB::initDB();
-    //MongoDB::connect("localhost", 8081, "apl", "users");
-    //MongoDB::signup("Alessandro", "Alessandro");
+    MongoDB *mongoDb = MongoDB::getInstance();
+    mongoDb->connectDB("localhost", 8081, "apl");
     const auto request = session->get_request();
-
     size_t content_length = request->get_header( "Content-Length", 0 );
-    session->fetch( content_length, [ request ]( const shared_ptr< Session > session, const Bytes & body )
+    session->fetch( content_length, [ request , &mongoDb]( const shared_ptr< Session > session, const Bytes & body )
     {
-
+        mongoDb->setCollection("users");
+        auto a = body.data();
         json requestJson = json::parse(body.data());
-        std::cout << requestJson["username"];
+        std::string username = requestJson["username"];
+        std::string password = requestJson["password"];
+        try{
+            mongoDb->signup(username, password);
+        } catch (mongocxx::bulk_write_exception& e){
+            std::cout << e.what() << std::endl;
+        }
 
     } );
 
@@ -84,14 +89,18 @@ int main( const int, const char** )
 {
 
     // Resource: rappresenta un endpoint di comunicazione
-    auto resource = make_shared< Resource >( );
+/*    auto resource = make_shared< Resource >( );
     resource->set_path( "/resource" );
-    resource->set_method_handler( "GET", get_method_handler );
+    resource->set_method_handler( "GET", get_method_handler );*/
 
-    // Endpoint POST per il caricamento delle immagini
+    // Endpoint POST per la registrazione
     auto signup = make_shared<Resource>();
     signup->set_path("/signup");
     signup->set_method_handler("POST", signup_method_handler);
+
+    //auto login = make_shared<Resource>();
+    //signup->set_path("/login");
+    //signup->set_method_handler("POST", login_method_handler);
 
     // Endpoint POST per il caricamento delle immagini
     auto upload = make_shared<Resource>();
