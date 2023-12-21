@@ -26,9 +26,9 @@ void get_name_handler(const shared_ptr< Session >  session){
     session->close( OK, args, { { "Content-Length", size_argument }, { "Connection", "close" } } );
 }
 
-void signup_method_handler(const shared_ptr< Session > session){
-    MongoDB *mongoDb = MongoDB::getInstance();
-    mongoDb->connectDB("localhost", 8081, "apl");
+/*void signup_method_handler(const shared_ptr< Session > session){
+    //MongoDB *mongoDb = MongoDB::getInstance();
+    //mongoDb->connectDB("localhost", 8081, "apl");
     const auto request = session->get_request();
     size_t content_length = request->get_header( "Content-Length", 0 );
     session->fetch( content_length, [ request , &mongoDb]( const shared_ptr< Session > session, const Bytes & body )
@@ -47,7 +47,30 @@ void signup_method_handler(const shared_ptr< Session > session){
     } );
 
 
+}*/
+
+/*
+void login_method_handler(const shared_ptr< Session > session){
+    //MongoDB *mongoDb = MongoDB::getInstance();
+    //mongoDb->connectDB("localhost", 8081, "apl");
+    const auto request = session->get_request();
+    size_t content_length = request->get_header( "Content-Length", 0 );
+    session->fetch( content_length, [ request , &mongoDb]( const shared_ptr< Session > session, const Bytes & body )
+    {
+        mongoDb->setCollection("users");
+        auto a = body.data();
+        json requestJson = json::parse(body.data());
+        std::string username = requestJson["username"];
+        std::string password = requestJson["password"];
+        try{
+            mongoDb->login(username, password);
+        } catch (mongocxx::bulk_write_exception& e){
+            std::cout << e.what() << std::endl;
+        }
+
+    } );
 }
+*/
 
 
 void upload_method_handler( const shared_ptr< Session > session )
@@ -85,7 +108,7 @@ void service_ready_handler( Service& )
     fprintf( stderr, "Hey! The server is up and running.\n" );
 }
 
-int main( const int, const char** )
+int main0( const int, const char** )
 {
 
     // Resource: rappresenta un endpoint di comunicazione
@@ -94,9 +117,9 @@ int main( const int, const char** )
     resource->set_method_handler( "GET", get_method_handler );*/
 
     // Endpoint POST per la registrazione
-    auto signup = make_shared<Resource>();
+/*    auto signup = make_shared<Resource>();
     signup->set_path("/signup");
-    signup->set_method_handler("POST", signup_method_handler);
+    signup->set_method_handler("POST", signup_method_handler);*/
 
     //auto login = make_shared<Resource>();
     //signup->set_path("/login");
@@ -116,7 +139,7 @@ int main( const int, const char** )
     auto service = make_shared< Service >( );
     // Publish a RESTful resource for public consumption;
     service->publish( upload );
-    service->publish(signup);
+    //service->publish(signup);
     // Set a handler to be invoked once the service is up and ready to serve incoming HTTP requests.
     // viene invocato l'handler quando il servizio è up
     service->set_ready_handler( service_ready_handler );

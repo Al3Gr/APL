@@ -13,8 +13,8 @@ MongoDB* MongoDB::getInstance() {
     return INSTANCE;
 }
 
-void MongoDB::connectDB(const std::string &hostname, const int port, const std::string& databaseName) {
-    auto *uri = new mongocxx::uri("mongodb://"+hostname+":"+std::to_string(port));
+void MongoDB::connectDB(const std::string &hostname, const std::string& port, const std::string& databaseName) {
+    auto *uri = new mongocxx::uri("mongodb://"+hostname+":"+port);
     auto *client = new mongocxx::client(*uri);
     database = (*client)[databaseName];
 }

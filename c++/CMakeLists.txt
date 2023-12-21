@@ -14,7 +14,13 @@ add_executable(Progetto
         test.cpp
         exceptions/LoginException.h
         handler/Handler.cpp
-        handler/Handler.h)
+        handler/Handler.h
+        utility/ConfigManager.cpp
+        utility/ConfigManager.h
+        utility/ConfigManager.h
+        server/Server.cpp
+        server/Server.h
+        main.cpp)
 
 find_package(unofficial-restbed CONFIG REQUIRED)
 find_package(CURL REQUIRED)

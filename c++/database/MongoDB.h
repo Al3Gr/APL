@@ -19,7 +19,7 @@ private:
 
 public:
     static MongoDB* getInstance();
-    void connectDB(const std::string& hostname, const int port, const std::string& databaseName);
+    void connectDB(const std::string& hostname, const std::string& port, const std::string& databaseName);
     void setCollection(const std::string& collectionName);
     void signup(const std::string& username, const std::string& pwd) noexcept(false);
     void login(const std::string& username, const std::string& pwd) noexcept(false);
