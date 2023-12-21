@@ -1,5 +1,7 @@
 import torch
+import base64
 import socket
+import os
 from mongoDB import MongoDB
 from PIL import Image
 from torchvision import transforms
@@ -28,14 +30,17 @@ def session(conn, addr):
     id = threading.get_ident()
     with conn:
         print(f'Connected with {addr}')
-        size_b = conn.recv(8)
+        size_b = conn.recv(4)
         size = int.from_bytes(size_b, "little")
         print(f"Image's dimension: {size}")
+        # image_d = conn.recv(size)
         with open(f"server_image_{id}.jpeg", "wb") as f:
+            # f.write(image_data)
             while size > 0:
-                image_data = conn.recv(2048)
+                image_64 = conn.recv(2048)
+                image_data = base64.b64decode(image_64)
                 f.write(image_data)
-                size = size - len(image_data)
+                size = size - len(image_64)
             print("Server image received")
         input_image = Image.open(f"server_image_{id}.jpeg")
         input_tensor = preprocess(input_image)
@@ -59,6 +64,7 @@ def session(conn, addr):
 
         print("Send response to client")
         conn.sendall(categories[top5_catid[0]].encode())
+        os.remove(f"server_image_{id}.jpeg")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

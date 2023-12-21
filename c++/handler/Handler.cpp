@@ -10,7 +10,6 @@ namespace apl::handler{
         session->fetch( content_length, [ request , &mongoDb]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
             mongoDb->setCollection("users");
-            auto a = body.data();
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string username = requestJson["username"];
             std::string password = requestJson["password"];
@@ -30,7 +29,6 @@ namespace apl::handler{
         session->fetch( content_length, [ request , &mongoDb]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
             mongoDb->setCollection("users");
-            auto a = body.data();
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string username = requestJson["username"];
             std::string password = requestJson["password"];
@@ -47,19 +45,20 @@ namespace apl::handler{
         const auto request = session->get_request( );
         size_t content_length = request->get_header( "Content-Length", 0 );
 
-        fprintf( stderr, "Content Length: %zu.\n", content_length );
-
         session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
             char buffer[1024];
-            auto size = body.size();
-            auto data = body.data();
-
+            nlohmann::json requestJson = nlohmann::json::parse(body.data());
+            std::string username = requestJson["username"];
+            std::string description = requestJson["description"];
+            std::string image = requestJson["image"];
+            int img_lenght = image.length();
+            fprintf(stderr, "%d\n", img_lenght);
             try {
                 SocketTCP socket("127.0.0.1", 10001);
                 socket.socketConnect();
-                socket.socketSend(&size, sizeof(size));
-                socket.socketSend(data, size);
+                socket.socketSend(&img_lenght, sizeof(img_lenght));
+                socket.socketSend(image.c_str(), img_lenght);
                 socket.socketRecv(buffer, 1024);
             } catch(SocketException& e){
                 fprintf(stderr, "%s\n", e.what());
