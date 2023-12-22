@@ -2,6 +2,7 @@ import torch
 import base64
 import socket
 import os
+import json
 from mongoDB import MongoDB
 from PIL import Image
 from torchvision import transforms
@@ -11,8 +12,11 @@ import threading
 # import ssl
 # ssl._create_default_https_context = ssl._create_unverified_context
 
-HOST = "127.0.0.1"
-PORT = 10001
+with open("config_tagger.json", "r") as j:
+    config = json.load(j)
+
+HOST = config["Host"]
+PORT = config["Port"]
 
 model = alexnet(weights=AlexNet_Weights.DEFAULT)
 model.eval()
@@ -33,9 +37,7 @@ def session(conn, addr):
         size_b = conn.recv(4)
         size = int.from_bytes(size_b, "little")
         print(f"Image's dimension: {size}")
-        # image_d = conn.recv(size)
         with open(f"server_image_{id}.jpeg", "wb") as f:
-            # f.write(image_data)
             while size > 0:
                 image_64 = conn.recv(2048)
                 image_data = base64.b64decode(image_64)
@@ -58,12 +60,12 @@ def session(conn, addr):
             # strip() rimuove gli spazi bianchi dietro e davanti
             categories = [s.strip() for s in f.readlines()]
 
-        top5_prob, top5_catid = torch.topk(probabilities, 1)
-        for i in range(top5_prob.size(0)):
-            print(categories[top5_catid[i]], top5_prob[i].item())
+        top_n_prob, top_n_catid = torch.topk(probabilities, config["N_tags"])
+        for i in range(top_n_prob.size(0)):
+            print(categories[top_n_catid[i]], top_n_prob[i].item())
 
         print("Send response to client")
-        conn.sendall(categories[top5_catid[0]].encode())
+        conn.sendall(categories[top_n_catid[0]].encode())
         os.remove(f"server_image_{id}.jpeg")
 
 
