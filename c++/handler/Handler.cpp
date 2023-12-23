@@ -63,7 +63,7 @@ namespace apl::handler{
             } catch(SocketException& e){
                 fprintf(stderr, "%s\n", e.what());
             }
-
+            auto b = strlen(buffer);
             session->close( restbed::OK, buffer, { { "Content-Length", std::to_string(strlen(buffer))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
     }

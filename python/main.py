@@ -15,6 +15,8 @@ def tag_image(conn, addr, n_tags):
         tagger.elaborate_image(image)
         tags = tagger.get_tags()
         print(tags)
+        # TODO: sistemare l'invio dei tag al server
+        # TODO: aggiungere il db
         connection.send_response(tags)
         os.remove(image)
 
