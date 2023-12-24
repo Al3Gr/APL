@@ -13,9 +13,9 @@ void Server::set_server_threading(const unsigned int &number_thread) {
     settings->set_worker_limit(number_thread);
 }
 
-void Server::connect_to_mongodb(const std::string &hostname, const std::string &port, const std::string &database) {
+void Server::connect_to_mongodb(const std::string &hostname, const std::string &port, const std::string &database, const std::string& username, const std::string& password) {
     MongoDB *mongoDb = MongoDB::getInstance();
-    mongoDb->connectDB(hostname, port, database);
+    mongoDb->connectDB(hostname, port, database, username, password);
 }
 
 void Server::add_entrypoint(const std::string &path, const std::string &method,

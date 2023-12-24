@@ -47,6 +47,9 @@ namespace apl::handler{
 
         session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
+            const char delimiter[2] = "-";
+            char *token;
+            std::list<std::string> tags;
             char buffer[1024];
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string username = requestJson["username"];
@@ -63,7 +66,14 @@ namespace apl::handler{
             } catch(SocketException& e){
                 fprintf(stderr, "%s\n", e.what());
             }
-            auto b = strlen(buffer);
+            token = strtok(buffer, delimiter);
+            while(token != nullptr){
+                tags.emplace_front(token);
+                token = strtok(nullptr, delimiter);
+            }
+            MongoDB *mongoDb = MongoDB::getInstance();
+            mongoDb->setCollection("photos");
+            mongoDb->uploadImage(username, description, "url", tags);
             session->close( restbed::OK, buffer, { { "Content-Length", std::to_string(strlen(buffer))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
     }

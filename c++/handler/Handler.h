@@ -7,6 +7,9 @@
 #include "../exceptions/LoginException.h"
 #include "restbed"
 #include <nlohmann/json.hpp>
+//#include <iostream>
+#include <list>
+#include "string.h"
 
 namespace apl::handler {
     void signup_handler(const std::shared_ptr< restbed::Session > session);

@@ -13,14 +13,18 @@ MongoDB* MongoDB::getInstance() {
     return INSTANCE;
 }
 
-void MongoDB::connectDB(const std::string &hostname, const std::string& port, const std::string& databaseName) {
-    auto *uri = new mongocxx::uri("mongodb://"+hostname+":"+port);
+void MongoDB::connectDB(const std::string &hostname, const std::string& port, const std::string& databaseName, const std::string& username, const std::string& password) {
+    auto *uri = new mongocxx::uri("mongodb://"+username+":"+password+"@"+hostname+":"+port);
     auto *client = new mongocxx::client(*uri);
     database = (*client)[databaseName];
 }
 
 void MongoDB::setCollection(const std::string &collectionName) {
-    collection = database[collectionName];
+     try{
+         collection = database[collectionName];
+     } catch (std::exception& e){
+         std::cout << e.what() << std::endl;
+     }
 }
 
 void MongoDB::signup(const std::string& username, const std::string& pwd) noexcept(false){
@@ -48,5 +52,26 @@ void MongoDB::login(const std::string &username, const std::string &pwd) noexcep
         std::cout << "TOKEN";
     }
 }
+
+void MongoDB::uploadImage(const std::string &username, const std::string &description, const std::string &url,
+                          const std::list<std::string> tags) {
+    bsoncxx::builder::basic::array tags_array;
+     for(auto const& t : tags){
+        tags_array.append(t);
+     }
+    bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> doc_value = bsoncxx::builder::basic::make_document(
+            bsoncxx::builder::basic::kvp("username", username),
+            bsoncxx::builder::basic::kvp("description", description),
+            bsoncxx::builder::basic::kvp("url", url),
+            bsoncxx::builder::basic::kvp("tags", tags_array)
+    );
+
+    try {
+        auto insert_one_result = collection.insert_one(doc_value);
+    } catch (mongocxx::exception& e) {
+        throw e;
+    }
+
+ }
 
 

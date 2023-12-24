@@ -1,9 +1,0 @@
-{
-  "HOSTNAME" : "localhost",
-  "PORT" : "8081",
-  "ROOT_USER": "root",
-  "ROOT_PWD": "root",
-  "DATABASE": "apl",
-  "COLLECTION_USERS": "users",
-  "COLLECTION_PHOTOS": "photos"
-}

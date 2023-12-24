@@ -14,7 +14,7 @@ public:
     Server();
     void set_server_port(const unsigned int& port);
     void set_server_threading(const unsigned int& number_thread);
-    void connect_to_mongodb(const std::string& hostname, const std::string& port, const std::string& database);
+    void connect_to_mongodb(const std::string& hostname, const std::string& port, const std::string& database, const std::string& username, const std::string& password);
     void add_entrypoint(const std::string& path, const std::string& method, const std::function< void ( const std::shared_ptr< Session > ) >& callback);
     void start();
 };

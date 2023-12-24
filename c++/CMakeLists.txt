@@ -15,15 +15,15 @@ add_executable(Progetto
         exceptions/LoginException.h
         handler/Handler.cpp
         handler/Handler.h
-        utility/ConfigManager.cpp
-        utility/ConfigManager.h
-        utility/ConfigManager.h
         server/Server.cpp
         server/Server.h
         main.cpp)
 
 find_package(unofficial-restbed CONFIG REQUIRED)
 find_package(CURL REQUIRED)
+
+find_package(unofficial-inih CONFIG REQUIRED)
+target_link_libraries(Progetto PRIVATE unofficial::inih::inireader)
 
 find_package(bsoncxx CONFIG REQUIRED)
 target_link_libraries(Progetto PRIVATE $<IF:$<TARGET_EXISTS:mongo::bsoncxx_static>,mongo::bsoncxx_static,mongo::bsoncxx_shared>)

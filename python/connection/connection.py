@@ -22,7 +22,10 @@ class Connection():
             print("Server image received")
         return f"server_image_{self.id}.jpeg"
 
-    def send_response(self, response):
+    def send_response(self, tags):
         print("Send response to client")
-        for r in response:
-            self.conn.sendall(r.encode())
+        response = ""
+        for t in tags:
+            response = response + t + "-"
+        
+        self.conn.sendall(response.encode())
