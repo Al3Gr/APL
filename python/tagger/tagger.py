@@ -5,16 +5,16 @@ from torchvision.models import AlexNet_Weights, alexnet
 from torchvision import transforms
 from PIL import Image
 import torch
-from database.mongoDB import MongoDB
+#from database.mongoDB import MongoDB
 
 
 
 class Tagger():
 
-    def __init__(self, n_tags):
+    def __init__(self, n_tags, mongoDB):
         self.n_tags = n_tags
         self.tags = []
-        self.mongo = MongoDB()
+        self.mongoDB = mongoDB
         self.model = alexnet(weights=AlexNet_Weights.DEFAULT)
         self.model.eval()
         self.preprocess = transforms.Compose([
@@ -48,6 +48,6 @@ class Tagger():
         for i in range(0, self.n_tags):
             tags.append(categories[top_n_catid[i]])
 
-        self.mongo.addTags(tags)
+        self.mongoDB.addTags(tags)
 
         return tags

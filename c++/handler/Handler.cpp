@@ -74,7 +74,7 @@ namespace apl::handler{
             MongoDB *mongoDb = MongoDB::getInstance();
             mongoDb->setCollection("photos");
             mongoDb->uploadImage(username, description, "url", tags);
-            session->close( restbed::OK, buffer, { { "Content-Length", std::to_string(strlen(buffer))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+            session->close( restbed::OK, "Uploaded", { { "Content-Length", "8"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
     }
 }
