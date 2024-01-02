@@ -7,7 +7,7 @@
 #include "../exceptions/LoginException.h"
 #include "restbed"
 #include <nlohmann/json.hpp>
-//#include <iostream>
+#include "jwt/jwt.hpp"
 #include <list>
 #include "string.h"
 

@@ -15,6 +15,8 @@ namespace apl::handler{
             std::string password = requestJson["password"];
             try{
                 mongoDb->signup(username, password);
+                jwt::jwt_object obj{jwt::params::algorithm("HS256"), jwt::params::payload({{"some", "payload"}}), jwt::params::secret("secret")};
+                session->close( restbed::OK, obj.signature(), { { "Content-Length", to_string(obj.signature().length())}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             } catch (mongocxx::bulk_write_exception& e){
                 std::cout << e.what() << std::endl;
             }
@@ -34,6 +36,7 @@ namespace apl::handler{
             std::string password = requestJson["password"];
             try{
                 mongoDb->login(username, password);
+                session->close( restbed::OK, "LOGIN", { { "Content-Length", "5"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             } catch (LoginException& e){
                 std::cout << e.what() << std::endl;
             }

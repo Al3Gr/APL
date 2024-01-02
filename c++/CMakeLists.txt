@@ -31,6 +31,8 @@ target_link_libraries(Progetto PRIVATE $<IF:$<TARGET_EXISTS:mongo::bsoncxx_stati
 find_package(mongocxx CONFIG REQUIRED)
 target_link_libraries(Progetto PRIVATE $<IF:$<TARGET_EXISTS:mongo::mongocxx_static>,mongo::mongocxx_static,mongo::mongocxx_shared>)
 
+find_package(cpp-jwt CONFIG REQUIRED)
+target_link_libraries(Progetto PRIVATE cpp-jwt::cpp-jwt)
 
 target_link_libraries(Progetto PRIVATE unofficial::restbed::restbed)
 target_link_libraries(Progetto PRIVATE ${CURL_LIBRARIES})
