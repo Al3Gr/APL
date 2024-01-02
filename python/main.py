@@ -9,25 +9,37 @@ from database.mongoDB import MongoDB
 
 
 def tag_image(conn, addr, n_tags, mongo):
+    # Funzione che si occupa della ricezione dell'immagine,
+    # della sua inferenza e della trasmissione dei tag ottenuti al server
     id = threading.get_ident()
     with conn:
-        tagger = Tagger(n_tags, mongo)
+        tagger = Tagger(n_tags)
         connection = Connection(conn, addr, id)
+        # ricevo l'immagine, la elaboro ed ottengo i relativi tag
         image = connection.receive_image()
         tagger.elaborate_image(image)
         tags = tagger.get_tags()
+        # registro i tag ottenuti nel db
+        mongo.addTags(tags)
         print(tags)
+        # mando i tag al server
         connection.send_response(tags)
+        # Cancello l'immagine per evitare di occupare memoria inutilmente dopo la sua inferenza
+        # e la restituizione dei relativi tag
         os.remove(image)
 
 
 def main():
+    # Leggo il file di configurazione
+    # Setto i parametri per quanto riguarda il tagger:
+    # Host e porta in cui si mette in ascolto, numero di tag restituiti
     config = configparser.ConfigParser()
     config.read("config/config.ini")
     HOST = config.get("Tagger", "Hostname")
     PORT = int(config.get("Tagger", "Port"))
     N_TAGS = int(config.get("Tagger", "Tags"))
 
+    # Setto i parametri per la connessione col il databse mongoDB
     HOSTNAME_DB = config.get('MongoDB', 'Hostname')
     PORT_DB = config.get('MongoDB', 'Port')
     USERNAME = config.get('MongoDB', 'Username')
@@ -36,11 +48,14 @@ def main():
     COLLECTION = config.get('MongoDB', 'Collection')
     
     try:
+        # Instaurata la connessione col db, mi pongo in attesa di nuove connessioni in entrata
         mongo = MongoDB(HOSTNAME_DB, PORT_DB, USERNAME, PASSWORD, DATABASE, COLLECTION)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print("Listen incoming connections")
             s.bind((HOST, PORT))
             s.listen()
+            # Ogni volta che arriva un anuova connessione, faccio partire un thread che gestirà
+            # l'inferenza dell'immagine in arrivo
             while True:
                 conn, addr = s.accept()
                 print("Start thread")
