@@ -33,7 +33,7 @@ void MongoDB::signup(const std::string& username, const std::string& pwd) noexce
                 bsoncxx::builder::basic::kvp("password", pwd)
             );
     try {
-        auto insert_one_result = collection.insert_one(doc_value);
+         collection.insert_one(doc_value);
     } catch (mongocxx::bulk_write_exception& e) {
         throw e;
     }
@@ -47,9 +47,6 @@ void MongoDB::login(const std::string &username, const std::string &pwd) noexcep
     auto find_one_result = collection.find_one(doc_value);
     if(!find_one_result){
         throw LoginException("User non presente");
-    }
-    else {
-        std::cout << "TOKEN";
     }
 }
 

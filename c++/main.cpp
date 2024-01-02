@@ -11,9 +11,11 @@ int main(){
     std::string database = reader.Get("MongoDB", "Database", "");
     std::string username = reader.Get("MongoDB", "Username", "");
     std::string password = reader.Get("MongoDB", "Password", "");
+    // leggo la porta su cui si mette in ascolto il server
+    int server_port = reader.GetInteger("Server", "Port", 1984);
     // inizializzo ed avvio il server
     Server server;
-    server.set_server_port(1984);
+    server.set_server_port(server_port);
     server.set_server_threading(std::thread::hardware_concurrency());
     server.connect_to_mongodb(host, port, database, username, password);
     server.add_entrypoint("/signup", "POST", apl::handler::signup_handler);

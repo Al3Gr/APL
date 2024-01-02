@@ -4,46 +4,50 @@
 namespace apl::handler{
 
     void signup_handler(const std::shared_ptr<restbed::Session> session) {
-        MongoDB *mongoDb = MongoDB::getInstance();
         const auto request = session->get_request();
         size_t content_length = request->get_header( "Content-Length", 0 );
-        session->fetch( content_length, [ request , &mongoDb]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
+        session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
-            mongoDb->setCollection("users");
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string username = requestJson["username"];
             std::string password = requestJson["password"];
             try{
+                MongoDB *mongoDb = MongoDB::getInstance();
+                mongoDb->setCollection("users");
                 mongoDb->signup(username, password);
                 jwt::jwt_object obj{jwt::params::algorithm("HS256"), jwt::params::payload({{"some", "payload"}}), jwt::params::secret("secret")};
+                obj.add_claim("exp", std::chrono::system_clock::now() + std::chrono::hours(2));
                 session->close( restbed::OK, obj.signature(), { { "Content-Length", to_string(obj.signature().length())}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             } catch (mongocxx::bulk_write_exception& e){
-                std::cout << e.what() << std::endl;
+                session->close( restbed::BAD_REQUEST, "User già presente", { { "Content-Length", "18"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             }
 
         } );
     }
 
     void login_handler(const std::shared_ptr<restbed::Session> session) {
-        MongoDB *mongoDb = MongoDB::getInstance();
         const auto request = session->get_request();
         size_t content_length = request->get_header( "Content-Length", 0 );
-        session->fetch( content_length, [ request , &mongoDb]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
+        session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
-            mongoDb->setCollection("users");
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string username = requestJson["username"];
             std::string password = requestJson["password"];
             try{
+                MongoDB *mongoDb = MongoDB::getInstance();
+                mongoDb->setCollection("users");
                 mongoDb->login(username, password);
-                session->close( restbed::OK, "LOGIN", { { "Content-Length", "5"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+                jwt::jwt_object obj{jwt::params::algorithm("HS256"), jwt::params::payload({{"some", "payload"}}), jwt::params::secret("secret")};
+                obj.add_claim("exp", std::chrono::system_clock::now() + std::chrono::hours(2));
+                session->close( restbed::OK, obj.signature(), { { "Content-Length", to_string(obj.signature().length())}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             } catch (LoginException& e){
-                std::cout << e.what() << std::endl;
+                session->close( restbed::BAD_REQUEST, "User non presente", { { "Content-Length", "17"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             }
 
         } );
     }
 
+    // TODO: sistemare alcune cose
     void upload_image_handler(const std::shared_ptr< restbed::Session > session){
         const auto request = session->get_request( );
         size_t content_length = request->get_header( "Content-Length", 0 );
@@ -76,6 +80,7 @@ namespace apl::handler{
             }
             MongoDB *mongoDb = MongoDB::getInstance();
             mongoDb->setCollection("photos");
+            // TODO: vedere se posso passare tags per riferimento
             mongoDb->uploadImage(username, description, "url", tags);
             session->close( restbed::OK, "Uploaded", { { "Content-Length", "8"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
