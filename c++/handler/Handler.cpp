@@ -47,17 +47,24 @@ namespace apl::handler{
         } );
     }
 
-    // TODO: sistemare alcune cose
     void upload_image_handler(const std::shared_ptr< restbed::Session > session){
         const auto request = session->get_request( );
         size_t content_length = request->get_header( "Content-Length", 0 );
+        auto token = request->get_header("Authorization", "");
+        try {
+            auto dec_token = jwt::decode(token, jwt::params::algorithms({"HS256"}), jwt::params::secret("secret"));
+        } catch (const jwt::TokenExpiredError& e) {
+            session->close( restbed::BAD_REQUEST, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+            return;
+        }
 
         session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
             const char delimiter[2] = "-";
-            char *token;
+            char *token_tag;
             std::list<std::string> tags;
             char buffer[1024];
+            SocketTCP *socket;
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string username = requestJson["username"];
             std::string description = requestJson["description"];
@@ -65,18 +72,21 @@ namespace apl::handler{
             int img_lenght = image.length();
             fprintf(stderr, "%d\n", img_lenght);
             try {
-                SocketTCP socket("127.0.0.1", 10001);
-                socket.socketConnect();
-                socket.socketSend(&img_lenght, sizeof(img_lenght));
-                socket.socketSend(image.c_str(), img_lenght);
-                socket.socketRecv(buffer, 1024);
+                socket = new SocketTCP("127.0.0.1", 10001);
+                socket->socketConnect();
+                socket->socketSend(&img_lenght, sizeof(img_lenght));
+                socket->socketSend(image.c_str(), img_lenght);
+                socket->socketRecv(buffer, 1024);
+                delete socket;
             } catch(SocketException& e){
-                fprintf(stderr, "%s\n", e.what());
+                delete socket;
+                session->close( restbed::INTERNAL_SERVER_ERROR, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+                return ;
             }
-            token = strtok(buffer, delimiter);
-            while(token != nullptr){
-                tags.emplace_front(token);
-                token = strtok(nullptr, delimiter);
+            token_tag = strtok(buffer, delimiter);
+            while(token_tag != nullptr){
+                tags.emplace_front(token_tag);
+                token_tag = strtok(nullptr, delimiter);
             }
             MongoDB *mongoDb = MongoDB::getInstance();
             mongoDb->setCollection("photos");

@@ -49,7 +49,7 @@ public:
     // con memoria heap no: devo invocare il distruttore
     // (delete/delete[] cancella l'area di memoria a cui fa riferimento il puntatore passato)
     ~SocketTCP(){
-        //cout << "Chiuso socket" << endl;
+        cout << "Chiuso socket" << endl;
         close(this->sockid);
     }
 
