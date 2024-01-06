@@ -1,0 +1,71 @@
+is_global = true
+build_property.TargetFramework = net7.0-ios
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = Client
+build_property.ProjectDir = D:\Universita\II Anno\APL\progetto\APL\c#\Client\
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/App.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.App.xaml
+build_metadata.AdditionalFiles.TargetPath = App.xaml
+build_metadata.AdditionalFiles.RelativePath = App.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/AppShell.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.AppShell.xaml
+build_metadata.AdditionalFiles.TargetPath = AppShell.xaml
+build_metadata.AdditionalFiles.RelativePath = AppShell.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/MainPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.MainPage.xaml
+build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
+build_metadata.AdditionalFiles.RelativePath = MainPage.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/Resources/Styles/Colors.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.Resources.Styles.Colors.xaml
+build_metadata.AdditionalFiles.TargetPath = Resources\Styles\Colors.xaml
+build_metadata.AdditionalFiles.RelativePath = Resources\Styles\Colors.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/Resources/Styles/Styles.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.Resources.Styles.Styles.xaml
+build_metadata.AdditionalFiles.TargetPath = Resources\Styles\Styles.xaml
+build_metadata.AdditionalFiles.RelativePath = Resources\Styles\Styles.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/Views/LoginPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.Views.LoginPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\LoginPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\LoginPage.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/Views/MainTabbedPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.Views.MainTabbedPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MainTabbedPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MainTabbedPage.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/Views/PostsPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.Views.PostsPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\PostsPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\PostsPage.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/Views/ProfiloPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.Views.ProfiloPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\ProfiloPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\ProfiloPage.xaml
+
+[D:/Universita/II Anno/APL/progetto/APL/c\#/Client/Views/SignupPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = Client.Views.SignupPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\SignupPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\SignupPage.xaml
