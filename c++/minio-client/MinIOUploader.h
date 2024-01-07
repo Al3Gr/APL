@@ -6,6 +6,7 @@
 #include <aws/core/Aws.h>
 #include <aws/s3/S3Client.h>
 #include <aws/s3/model/CreateBucketRequest.h>
+#include <aws/s3/model/PutBucketPolicyRequest.h>
 #include <aws/s3/model/HeadBucketRequest.h>
 #include <aws/s3/model/PutObjectRequest.h>
 #include <aws/s3/model/GetObjectRequest.h>
@@ -22,6 +23,7 @@ private:
     static MinIOUploader* INSTANCE;
     MinIOUploader();
     bool createBucket();
+    bool setBucketPolicy();
 public:
     ~MinIOUploader();
     static MinIOUploader* getInstance();

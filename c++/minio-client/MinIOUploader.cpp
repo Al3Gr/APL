@@ -18,6 +18,7 @@ void MinIOUploader::connectToBucket(const Aws::String &endpoint, const Aws::Stri
     this->client =std::make_shared<Aws::S3::S3Client>(credentials, clientConfig, Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy(), false);
     this->bucketName = bucketName;
     createBucket();
+    setBucketPolicy();
 }
 
 MinIOUploader* MinIOUploader::getInstance() {
@@ -29,6 +30,42 @@ MinIOUploader* MinIOUploader::getInstance() {
 
 MinIOUploader::~MinIOUploader(){
     Aws::ShutdownAPI(this->options);
+}
+
+bool MinIOUploader::setBucketPolicy() {
+    Aws::String policy = "{\n"
+                         "     \"Version\":\"2012-10-17\",\n"
+                         "      \"Statement\":[\n"
+                         "          {\n"
+                         "             \"Effect\": \"Allow\",\n"
+                         "             \"Principal\":{\n"
+                         "                  \"AWS\":[\"*\"]"
+                         "               },\n"
+                         "              \"Action\": \"s3:GetObject\",\n"
+                         "              \"Resource\":\"arn:aws:s3:::\""
+                         + this->bucketName + "\"/*\"}]}";
+
+    std::shared_ptr<Aws::StringStream> request_body =
+            Aws::MakeShared<Aws::StringStream>("");
+    *request_body << policy;
+
+    Aws::S3::Model::PutBucketPolicyRequest request;
+    request.SetBucket(this->bucketName);
+    request.SetBody(request_body);
+
+    Aws::S3::Model::PutBucketPolicyOutcome outcome = client->PutBucketPolicy(request);
+
+    if (!outcome.IsSuccess()) {
+        std::cerr << "Error: PutBucketPolicy: "
+                  << outcome.GetError().GetMessage() << std::endl;
+    }
+    else {
+        std::cout << "Set the following policy body for the bucket '" <<
+                  this->bucketName << "':" << std::endl << std::endl;
+        std::cout << policy << std::endl;
+    }
+
+    return outcome.IsSuccess();
 }
 
 bool MinIOUploader::createBucket() {
