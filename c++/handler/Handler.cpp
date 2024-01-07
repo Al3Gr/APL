@@ -95,14 +95,16 @@ namespace apl::handler{
                 token_tag = strtok(nullptr, delimiter);
             }
             MinIOUploader *minio = MinIOUploader::getInstance();
-            minio->putImage(Aws::String(to_string(hasher("Username"+image))+".jpeg"), "file.jpeg");
+            std::string key = to_string(hasher("Username"+image))+".jpeg";
+            minio->putImage(Aws::String(key), "file.jpeg");
             MongoDB *mongoDb = MongoDB::getInstance();
             mongoDb->setCollection("photos");
             // TODO: vedere se posso passare tags per riferimento
-            mongoDb->uploadImage(username, description, "url", tags);
+            mongoDb->uploadImage(username, description, "http://localhost:9000/apl/"+key, tags);
             session->close( restbed::OK, "Uploaded", { { "Content-Length", "8"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
     }
+
 
     void get_image_handler(const std::shared_ptr< restbed::Session > session){
         cout << "get" << endl;

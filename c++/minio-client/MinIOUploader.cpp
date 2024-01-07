@@ -39,11 +39,11 @@ bool MinIOUploader::setBucketPolicy() {
                          "          {\n"
                          "             \"Effect\": \"Allow\",\n"
                          "             \"Principal\":{\n"
-                         "                  \"AWS\":[\"*\"]"
+                         "                  \"AWS\":[\"*\"]\n"
                          "               },\n"
-                         "              \"Action\": \"s3:GetObject\",\n"
-                         "              \"Resource\":\"arn:aws:s3:::\""
-                         + this->bucketName + "\"/*\"}]}";
+                         "              \"Action\": [\"s3:GetObject\" ],\n"
+                         "              \"Resource\": [\"arn:aws:s3:::"
+                         + this->bucketName + "/*\"]}]}";
 
     std::shared_ptr<Aws::StringStream> request_body =
             Aws::MakeShared<Aws::StringStream>("");

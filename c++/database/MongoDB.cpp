@@ -71,15 +71,22 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
 
  }
 
+ //TODO: field time
 std::string MongoDB::getImages(bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value>& query, const int &skip) {
-     std::string json = "";
-    auto result = collection.find(query);
+     std::string json = "[";
+     mongocxx::options::find option;
+     //option.sort()
+     option.limit(10);
+     option.skip(skip);
+    auto result = collection.find(query, option);
 
     for(auto r : result){
         std::cout << bsoncxx::to_json(r, bsoncxx::ExtendedJsonMode::k_relaxed);
         json.append(bsoncxx::to_json(r, bsoncxx::ExtendedJsonMode::k_relaxed));
-        json.append(" , ");
+        json.append(",");
     }
+    json = json.substr(0, json.size()-1);
+    json.append("]");
     return json;
  }
 
