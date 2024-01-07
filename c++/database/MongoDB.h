@@ -7,6 +7,7 @@
 #include <mongocxx/instance.hpp>
 #include <mongocxx/exception/bulk_write_exception.hpp>
 #include "../exceptions/LoginException.h"
+#include <nlohmann/json.hpp>
 
 
 class MongoDB {
@@ -26,7 +27,7 @@ public:
     void signup(const std::string& username, const std::string& pwd) noexcept(false);
     void login(const std::string& username, const std::string& pwd) noexcept(false);
     void uploadImage(const std::string& username, const std::string& description, const std::string& url, const std::list<std::string> tags);
-
+    std::string getImages(bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value>& query, const int& skip);
 
 };
 

@@ -103,5 +103,43 @@ namespace apl::handler{
             session->close( restbed::OK, "Uploaded", { { "Content-Length", "8"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
     }
+
+    void get_image_handler(const std::shared_ptr< restbed::Session > session){
+        cout << "get" << endl;
+        const auto request = session->get_request();
+        auto token = request->get_header("Authorization", "");
+        try {
+            auto dec_token = jwt::decode(token, jwt::params::algorithms({"HS256"}), jwt::params::secret("secret"));
+        } catch (const jwt::TokenExpiredError& e) {
+            session->close( restbed::UNAUTHORIZED, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+            return;
+        }
+        std::string username = request->get_query_parameter("username", "");
+        std::string tag = request->get_query_parameter("tag", "");
+        int skip = std::stoi(request->get_query_parameter("skip", "0"));
+        bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> query;
+        if(!username.empty()){
+            query = bsoncxx::builder::basic::make_document(
+                    bsoncxx::builder::basic::kvp("username", bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("$ne", username)))
+            );
+        }
+        if(!tag.empty()){
+            query = bsoncxx::builder::basic::make_document(
+                    bsoncxx::builder::basic::kvp("tags", tag)
+            );
+        }
+        if(!username.empty() && !tag.empty()){
+            query = bsoncxx::builder::basic::make_document(
+                    bsoncxx::builder::basic::kvp("username", bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("$ne", username))),
+                    bsoncxx::builder::basic::kvp("tags", tag)
+            );
+        }
+
+        MongoDB *mongoDb = MongoDB::getInstance();
+        mongoDb->setCollection("photos");
+        std::string result = mongoDb->getImages(query, skip);
+
+        session->close( restbed::OK, result, { { "Content-Length", to_string(result.length()) }, {"Content-Type", "text/html"}, { "Connection", "close" } } );
+    }
 }
 
