@@ -4,6 +4,7 @@
 namespace apl::handler{
 
     void signup_handler(const std::shared_ptr<restbed::Session> session) {
+        cout << "signup" << endl;
         const auto request = session->get_request();
         size_t content_length = request->get_header( "Content-Length", 0 );
         session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
@@ -26,6 +27,7 @@ namespace apl::handler{
     }
 
     void login_handler(const std::shared_ptr<restbed::Session> session) {
+        cout << "login" << endl;
         const auto request = session->get_request();
         size_t content_length = request->get_header( "Content-Length", 0 );
         session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
@@ -48,13 +50,14 @@ namespace apl::handler{
     }
 
     void upload_image_handler(const std::shared_ptr< restbed::Session > session){
+        cout << "upload" << endl;
         const auto request = session->get_request( );
         size_t content_length = request->get_header( "Content-Length", 0 );
         auto token = request->get_header("Authorization", "");
         try {
             auto dec_token = jwt::decode(token, jwt::params::algorithms({"HS256"}), jwt::params::secret("secret"));
         } catch (const jwt::TokenExpiredError& e) {
-            session->close( restbed::BAD_REQUEST, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+            session->close( restbed::UNAUTHORIZED, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             return;
         }
 
@@ -69,6 +72,9 @@ namespace apl::handler{
             std::string username = requestJson["username"];
             std::string description = requestJson["description"];
             std::string image = requestJson["image"];
+            ofstream MyFile("filename.txt");
+            MyFile << image;
+            MyFile.close();
             int img_lenght = image.length();
             fprintf(stderr, "%d\n", img_lenght);
             try {
@@ -88,6 +94,8 @@ namespace apl::handler{
                 tags.emplace_front(token_tag);
                 token_tag = strtok(nullptr, delimiter);
             }
+            MinIOUploader *minio = MinIOUploader::getInstance("localhost:9000", "username", "password", "apl");
+            minio->putImage("apl", "filename.txt");
             MongoDB *mongoDb = MongoDB::getInstance();
             mongoDb->setCollection("photos");
             // TODO: vedere se posso passare tags per riferimento

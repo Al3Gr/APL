@@ -29,3 +29,7 @@ void Server::add_entrypoint(const std::string &path, const std::string &method,
 void Server::start() {
     service->start(settings);
 }
+
+void Server::connect_to_minio(const std::string& hostname, const std::string& port, const std::string& keyId, const std::string &keySecret, const std::string &bucketName){
+    MinIOUploader *minIoUploader = MinIOUploader::getInstance(Aws::String(hostname+":"+port), Aws::String(keyId), Aws::String(keySecret), Aws::String(bucketName));
+}

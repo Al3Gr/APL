@@ -1,53 +1,109 @@
 #include "MinIOUploader.h"
 
-#include <utility>
+MinIOUploader* MinIOUploader::INSTANCE;
 
-MinIOUploader::MinIOUploader(std::string minioEndpoint, std::string bucketName) : minioEndpoint(
-        std::move(minioEndpoint)), bucketName(std::move(bucketName)) {
-    curl = curl_easy_init();
-    if (!curl) {
-        std::cerr << "Failed to initialize curl!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+MinIOUploader::MinIOUploader(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName) {
+    Aws::InitAPI(this->options);
+    Aws::Client::ClientConfiguration clientConfig;
+
+    clientConfig.endpointOverride = endpoint;
+    clientConfig.scheme = Aws::Http::Scheme::HTTP;
+
+    Aws::Auth::AWSCredentials credentials;
+    credentials.SetAWSAccessKeyId(keyId);
+    credentials.SetAWSSecretKey(keySecret);
+    this->client =std::make_shared<Aws::S3::S3Client>(credentials, clientConfig, Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy(), false);
+
+    createBucket(bucketName);
 }
 
-MinIOUploader::~MinIOUploader() {
-    if (curl) {
-        curl_easy_cleanup(curl);
+MinIOUploader* MinIOUploader::getInstance(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName) {
+    if(INSTANCE == nullptr){
+        INSTANCE = new MinIOUploader(endpoint, keyId, keySecret, bucketName);
     }
+    return  INSTANCE;
 }
 
-
-void MinIOUploader::uploadImage(const std::basic_string<char> &objectName,
-                                std::vector<unsigned char> &imageData) const {
-    // Construct the upload URL
-    std::string uploadUrl = std::string(minioEndpoint) + "/" + bucketName + "/" + objectName;
-
-    // Set the upload URL and enable uploading
-    curl_easy_setopt(curl, CURLOPT_URL, uploadUrl.c_str());
-    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-
-    // Set the callback function for reading data during upload
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, readCallback);
-    curl_easy_setopt(curl, CURLOPT_READDATA, &imageData);
-    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, static_cast<curl_off_t>(imageData.size()));
-
-    // Perform the upload
-    CURLcode result = curl_easy_perform(curl);
-    if (result != CURLE_OK) {
-        std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(result) << std::endl;
-        exit(EXIT_FAILURE);
-    }
+MinIOUploader::~MinIOUploader(){
+    Aws::ShutdownAPI(this->options);
 }
 
-size_t MinIOUploader::readCallback(void *ptr, size_t size, size_t nmemb, void *userdata) {
-    auto *data = static_cast<std::vector<unsigned char > *>(userdata);
-    size_t dataSize = size * nmemb;
-    ptrdiff_t bytesToCopy = static_cast<std::vector<int>::difference_type>(std::min(dataSize, data->size()));
+bool MinIOUploader::createBucket(const Aws::String &bucketName) {
 
-    // Copy data to the buffer and remove copied data from the vector
-    std::copy(data->begin(), data->begin() + bytesToCopy, static_cast<unsigned char*>(ptr));
-    data->erase(data->begin(), data->begin() + bytesToCopy);
+    Aws::S3::Model::HeadBucketRequest headReq;
+    headReq.WithBucket(bucketName);
+    auto outcome_head = client->HeadBucket(headReq);
+    if(!outcome_head.IsSuccess()){
+        Aws::S3::Model::CreateBucketRequest request;
+        request.SetBucket(bucketName);
 
-    return bytesToCopy;
+        Aws::S3::Model::CreateBucketOutcome outcome = client->CreateBucket(request);
+        if (!outcome.IsSuccess()) {
+            auto err = outcome.GetError();
+            std::cerr << "Error: CreateBucket: " <<
+                      err.GetExceptionName() << ": " << err.GetMessage() << std::endl;
+        }
+        else {
+            std::cout << "Created bucket " << bucketName << std::endl;
+        }
+
+        return outcome.IsSuccess();
+    } else {
+        std::cout << "bucket already created" << std::endl;
+        return true;
+    }
+
+}
+
+bool MinIOUploader::putImage(const Aws::String &bucketName, const Aws::String &filename) {
+    Aws::S3::Model::PutObjectRequest request;
+    request.SetBucket(bucketName);
+    request.SetKey(filename);
+
+    //???
+    std::shared_ptr<Aws::IOStream> inputData =
+            Aws::MakeShared<Aws::FStream>("SampleAllocationTag",
+                                          filename.c_str(),
+                                          std::ios_base::in | std::ios_base::binary);
+
+    if (!*inputData) {
+        std::cerr << "Error unable to read file " << filename << std::endl;
+        return false;
+    }
+
+    request.SetBody(inputData);
+
+    Aws::S3::Model::PutObjectOutcome outcome = client->PutObject(request);
+
+    if (!outcome.IsSuccess()) {
+        std::cerr << "Error: PutObject: " <<
+                  outcome.GetError().GetMessage() << std::endl;
+    }
+    else {
+        std::cout << "Added object '" << filename << "' to bucket '"
+                  << bucketName << "'.";
+    }
+
+    return outcome.IsSuccess();
+}
+
+bool MinIOUploader::getImage(const Aws::String &bucketName, const Aws::String &objectKey) {
+    Aws::S3::Model::GetObjectRequest request;
+    request.SetBucket(bucketName);
+    request.SetKey(objectKey);
+
+    Aws::S3::Model::GetObjectOutcome outcome = client->GetObject(request);
+    auto b = outcome.GetResult().GetBody().rdbuf();
+    if (!outcome.IsSuccess()) {
+        const Aws::S3::S3Error &err = outcome.GetError();
+        std::cerr << "Error: GetObject: " <<
+                  err.GetExceptionName() << ": " << err.GetMessage() << std::endl;
+    }
+    else {
+        std::cout << "Successfully retrieved '" << objectKey << "' from '"
+                  << bucketName << "'." << std::endl;
+    }
+
+
+    return outcome.IsSuccess();
 }

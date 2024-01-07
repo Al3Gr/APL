@@ -5,11 +5,13 @@
 #include "../database/MongoDB.h"
 #include "../exceptions/SocketException.h"
 #include "../exceptions/LoginException.h"
+#include "../minio-client/MinIOUploader.h"
 #include "restbed"
 #include <nlohmann/json.hpp>
 #include "jwt/jwt.hpp"
 #include <list>
 #include "string.h"
+#include "fstream"
 
 namespace apl::handler {
     void signup_handler(const std::shared_ptr< restbed::Session > session);
