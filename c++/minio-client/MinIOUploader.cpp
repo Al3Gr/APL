@@ -2,8 +2,11 @@
 
 MinIOUploader* MinIOUploader::INSTANCE;
 
-MinIOUploader::MinIOUploader(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName) {
+MinIOUploader::MinIOUploader() {
     Aws::InitAPI(this->options);
+}
+
+void MinIOUploader::connectToBucket(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName) {
     Aws::Client::ClientConfiguration clientConfig;
 
     clientConfig.endpointOverride = endpoint;
@@ -13,13 +16,13 @@ MinIOUploader::MinIOUploader(const Aws::String &endpoint, const Aws::String &key
     credentials.SetAWSAccessKeyId(keyId);
     credentials.SetAWSSecretKey(keySecret);
     this->client =std::make_shared<Aws::S3::S3Client>(credentials, clientConfig, Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy(), false);
-
-    createBucket(bucketName);
+    this->bucketName = bucketName;
+    createBucket();
 }
 
-MinIOUploader* MinIOUploader::getInstance(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName) {
+MinIOUploader* MinIOUploader::getInstance() {
     if(INSTANCE == nullptr){
-        INSTANCE = new MinIOUploader(endpoint, keyId, keySecret, bucketName);
+        INSTANCE = new MinIOUploader();
     }
     return  INSTANCE;
 }
@@ -28,14 +31,14 @@ MinIOUploader::~MinIOUploader(){
     Aws::ShutdownAPI(this->options);
 }
 
-bool MinIOUploader::createBucket(const Aws::String &bucketName) {
+bool MinIOUploader::createBucket() {
 
     Aws::S3::Model::HeadBucketRequest headReq;
-    headReq.WithBucket(bucketName);
+    headReq.WithBucket(this->bucketName);
     auto outcome_head = client->HeadBucket(headReq);
     if(!outcome_head.IsSuccess()){
         Aws::S3::Model::CreateBucketRequest request;
-        request.SetBucket(bucketName);
+        request.SetBucket(this->bucketName);
 
         Aws::S3::Model::CreateBucketOutcome outcome = client->CreateBucket(request);
         if (!outcome.IsSuccess()) {
@@ -44,7 +47,7 @@ bool MinIOUploader::createBucket(const Aws::String &bucketName) {
                       err.GetExceptionName() << ": " << err.GetMessage() << std::endl;
         }
         else {
-            std::cout << "Created bucket " << bucketName << std::endl;
+            std::cout << "Created bucket " << this->bucketName << std::endl;
         }
 
         return outcome.IsSuccess();
@@ -55,12 +58,12 @@ bool MinIOUploader::createBucket(const Aws::String &bucketName) {
 
 }
 
-bool MinIOUploader::putImage(const Aws::String &bucketName, const Aws::String &filename) {
+bool MinIOUploader::putImage(const Aws::String &key, const Aws::String &filename) {
     Aws::S3::Model::PutObjectRequest request;
-    request.SetBucket(bucketName);
-    request.SetKey(filename);
+    request.SetBucket(this->bucketName);
+    request.SetKey(key);
 
-    //???
+    //Aws::FStream is used to upload the contents of the local file to the bucket.
     std::shared_ptr<Aws::IOStream> inputData =
             Aws::MakeShared<Aws::FStream>("SampleAllocationTag",
                                           filename.c_str(),
@@ -81,15 +84,15 @@ bool MinIOUploader::putImage(const Aws::String &bucketName, const Aws::String &f
     }
     else {
         std::cout << "Added object '" << filename << "' to bucket '"
-                  << bucketName << "'.";
+                  << this->bucketName << "'.";
     }
 
     return outcome.IsSuccess();
 }
 
-bool MinIOUploader::getImage(const Aws::String &bucketName, const Aws::String &objectKey) {
+bool MinIOUploader::getImage( const Aws::String &objectKey) {
     Aws::S3::Model::GetObjectRequest request;
-    request.SetBucket(bucketName);
+    request.SetBucket(this->bucketName);
     request.SetKey(objectKey);
 
     Aws::S3::Model::GetObjectOutcome outcome = client->GetObject(request);
@@ -101,7 +104,7 @@ bool MinIOUploader::getImage(const Aws::String &bucketName, const Aws::String &o
     }
     else {
         std::cout << "Successfully retrieved '" << objectKey << "' from '"
-                  << bucketName << "'." << std::endl;
+                  << this->bucketName << "'." << std::endl;
     }
 
 

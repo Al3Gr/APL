@@ -11,14 +11,17 @@ int main(){
     std::string database = reader.Get("MongoDB", "Database", "");
     std::string username = reader.Get("MongoDB", "Username", "");
     std::string password = reader.Get("MongoDB", "Password", "");
+
     // leggo la porta su cui si mette in ascolto il server
     int server_port = reader.GetInteger("Server", "Port", 1984);
+
     // leggo il file di configurazione per Minio
     std::string host_minio = reader.Get("Minio", "Hostname", "");
     std::string port_minio = reader.Get("Minio", "Port", "");
     std::string keyId = reader.Get("Minio", "KeyId", "");
     std::string keySecret = reader.Get("Minio", "KeySecret", "");
     std::string bucketName = reader.Get("Minio", "BucketName", "");
+
     // inizializzo ed avvio il server
     Server server;
     server.set_server_port(server_port);

@@ -33,6 +33,9 @@ target_link_libraries(Progetto PRIVATE $<IF:$<TARGET_EXISTS:mongo::mongocxx_stat
 find_package(cpp-jwt CONFIG REQUIRED)
 target_link_libraries(Progetto PRIVATE cpp-jwt::cpp-jwt)
 
+find_path(CPP_BASE64_INCLUDE_DIRS "cpp-base64/base64.cpp")
+target_include_directories(Progetto PRIVATE ${CPP_BASE64_INCLUDE_DIRS})
+
 
 find_package(AWSSDK CONFIG COMPONENTS core dynamodb kinesis s3 REQUIRED)
 target_include_directories(Progetto PRIVATE ${AWSSDK_INCLUDE_DIRS})

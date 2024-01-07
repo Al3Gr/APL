@@ -17,16 +17,17 @@ class MinIOUploader {
 private:
     Aws::SDKOptions options;
     std::shared_ptr<Aws::S3::S3Client> client;
+    Aws::String bucketName;
 
     static MinIOUploader* INSTANCE;
-
-    bool createBucket(const Aws::String &bucketName);
-    MinIOUploader(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName);
+    MinIOUploader();
+    bool createBucket();
 public:
     ~MinIOUploader();
-    static MinIOUploader* getInstance(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName);
-    bool putImage(const Aws::String &bucketName, const Aws::String &filename);
-    bool getImage(const Aws::String &bucketName, const Aws::String &objectKey);
+    static MinIOUploader* getInstance();
+    void connectToBucket(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName);
+    bool putImage(const Aws::String &key, const Aws::String &filename);
+    bool getImage(const Aws::String &objectKey);
 
 };
 

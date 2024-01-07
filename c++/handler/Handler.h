@@ -13,10 +13,13 @@
 #include "string.h"
 #include "fstream"
 
+
 namespace apl::handler {
     void signup_handler(const std::shared_ptr< restbed::Session > session);
     void login_handler(const std::shared_ptr< restbed::Session > session);
     void upload_image_handler(const std::shared_ptr< restbed::Session > session);
+    //TODO get_image endpoint
+    void get_image_handler(const std::shared_ptr< restbed::Session > session);
 };
 
 

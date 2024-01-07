@@ -1,5 +1,5 @@
 #include "Handler.h"
-
+#include "cpp-base64/base64.cpp"
 
 namespace apl::handler{
 
@@ -68,15 +68,15 @@ namespace apl::handler{
             std::list<std::string> tags;
             char buffer[1024];
             SocketTCP *socket;
+            std::hash<std::string> hasher;
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string username = requestJson["username"];
             std::string description = requestJson["description"];
             std::string image = requestJson["image"];
-            ofstream MyFile("filename.txt");
-            MyFile << image;
-            MyFile.close();
             int img_lenght = image.length();
-            fprintf(stderr, "%d\n", img_lenght);
+            ofstream MyFile("file.jpeg");
+            MyFile << base64_decode(image, false);
+            MyFile.close();
             try {
                 socket = new SocketTCP("127.0.0.1", 10001);
                 socket->socketConnect();
@@ -94,8 +94,8 @@ namespace apl::handler{
                 tags.emplace_front(token_tag);
                 token_tag = strtok(nullptr, delimiter);
             }
-            MinIOUploader *minio = MinIOUploader::getInstance("localhost:9000", "username", "password", "apl");
-            minio->putImage("apl", "filename.txt");
+            MinIOUploader *minio = MinIOUploader::getInstance();
+            minio->putImage(Aws::String(to_string(hasher("Username"+image))+".jpeg"), "file.jpeg");
             MongoDB *mongoDb = MongoDB::getInstance();
             mongoDb->setCollection("photos");
             // TODO: vedere se posso passare tags per riferimento
