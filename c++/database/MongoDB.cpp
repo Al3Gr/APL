@@ -50,8 +50,9 @@ void MongoDB::login(const std::string &username, const std::string &pwd) noexcep
 }
 
 void MongoDB::uploadImage(const std::string &username, const std::string &description, const std::string &url,
-                          const std::list<std::string> tags) {
+                          const std::list<std::string> &tags) {
     bsoncxx::builder::basic::array tags_array;
+    bsoncxx::builder::basic::array likes;
      for(auto const& t : tags){
         tags_array.append(t);
      }
@@ -60,7 +61,7 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
             bsoncxx::builder::basic::kvp("description", description),
             bsoncxx::builder::basic::kvp("url", url),
             bsoncxx::builder::basic::kvp("tags", tags_array),
-            bsoncxx::builder::basic::kvp("likes", bsoncxx::builder::basic::array) //check here! se il bson array così si crea vuoto
+            bsoncxx::builder::basic::kvp("likes", likes) //check here! se il bson array così si crea vuoto
     );
 
     try {
@@ -71,18 +72,20 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
  }
 
  bool MongoDB::likeImage(const std::string &username, const std::string &idImage, const bool like) {
-    bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> doc_value = bsoncxx::builder::basic::make_document(
-            bsoncxx::builder::basic::kvp("_id", idImage) //check here! se la stringa è convertita in automatico in bsonobjectid
+    bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> id_filter = bsoncxx::builder::basic::make_document(
+            bsoncxx::builder::basic::kvp("_id", bsoncxx::oid(idImage))
     );
-
+    bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> query;
     if(like){
-        //mettere l'update query con $addtoset
+        query = bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("$addToSet", bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("likes", username))));
     }
     else{
-        //mettere l'update query con $pull
+        query = bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("$pull", bsoncxx::builder::basic::make_document(bsoncxx::builder::basic::kvp("likes", username))));
     }
-
-    //auto update_one_result = photosCollection.update_one(doc_value, );
+    auto update_one_result = photosCollection.update_one(id_filter, query);
+    if(!update_one_result){
+        return false;
+    }
     return true;
 
  }

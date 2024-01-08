@@ -13,6 +13,7 @@
 #include "string.h"
 #include "fstream"
 
+#pragma once
 
 namespace apl::handler {
     void signup_handler(const std::shared_ptr< restbed::Session > session);

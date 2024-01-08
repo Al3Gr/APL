@@ -49,17 +49,19 @@ namespace apl::handler{
 
     void upload_image_handler(const std::shared_ptr< restbed::Session > session){
         cout << "upload" << endl;
+        std::string username;
         const auto request = session->get_request( );
         size_t content_length = request->get_header( "Content-Length", 0 );
         auto token = request->get_header("Authorization", "");
         try {
             auto dec_token = jwt::decode(token, jwt::params::algorithms({"HS256"}), jwt::params::secret("secret"));
+            username = dec_token.payload().get_claim_value<std::string>("username");
         } catch (const jwt::TokenExpiredError& e) {
             session->close( restbed::UNAUTHORIZED, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             return;
         }
 
-        session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
+        session->fetch( content_length, [ request, username ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
             const char delimiter[2] = "-";
             char *token_tag;
@@ -68,7 +70,6 @@ namespace apl::handler{
             SocketTCP *socket;
             std::hash<std::string> hasher;
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
-            std::string username = dec_token.payload()["username"];
             std::string description = requestJson["description"];
             std::string image = requestJson["image"];
             int img_lenght = image.length();
@@ -93,7 +94,7 @@ namespace apl::handler{
                 token_tag = strtok(nullptr, delimiter);
             }
             MinIOUploader *minio = MinIOUploader::getInstance();
-            std::string key = to_string(hasher("Username"+image))+".jpeg";
+            std::string key = to_string(hasher(username+image))+".jpeg";
             minio->putImage(Aws::String(key), "file.jpeg");
             MongoDB *mongoDb = MongoDB::getInstance();
             // TODO: vedere se posso passare tags per riferimento
@@ -146,27 +147,27 @@ namespace apl::handler{
         const auto request = session->get_request( );
         size_t content_length = request->get_header( "Content-Length", 0 );
         auto token = request->get_header("Authorization", "");
+        std::string username;
         try {
             auto dec_token = jwt::decode(token, jwt::params::algorithms({"HS256"}), jwt::params::secret("secret"));
+            username = dec_token.payload().get_claim_value<std::string>("username");
         } catch (const jwt::TokenExpiredError& e) {
             session->close( restbed::UNAUTHORIZED, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             return;
         }
 
-        session->fetch( content_length, [ request ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
+        session->fetch( content_length, [ request, username ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
-            std::string username = dec_token.payload()["username"];
             std::string idImage = requestJson["id"];
             std::string like = requestJson["like"];
-            bool likeBoolean = like == "true" ? true : false;
+            bool likeBoolean = like == "true";
 
             MongoDB *mongoDb = MongoDB::getInstance();
-            // TODO: vedere se posso passare tags per riferimento
             if(mongoDb->likeImage(username, idImage, likeBoolean))
-                session->close( restbed::OK, "", { { "Content-Length", "8"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+                session->close( restbed::OK, "Like", { { "Content-Length", "4"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             else
-                session->close( restbed::BAD_REQUEST, "Errore", { { "Content-Length", "8"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+                session->close( restbed::BAD_REQUEST, "Errore", { { "Content-Length", "6"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
     }
 }
