@@ -19,6 +19,7 @@ namespace apl::handler {
     void login_handler(const std::shared_ptr< restbed::Session > session);
     void upload_image_handler(const std::shared_ptr< restbed::Session > session);
     void get_image_handler(const std::shared_ptr< restbed::Session > session);
+    void like_handler(const std::shared_ptr< restbed::Session > session);
 };
 
 

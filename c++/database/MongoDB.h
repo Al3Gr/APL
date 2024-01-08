@@ -14,7 +14,8 @@ class MongoDB {
 private:
     mongocxx::instance *instance;
     mongocxx::database database;
-    mongocxx::collection collection;
+    mongocxx::collection userCollection;
+    mongocxx::collection photosCollection;
 
     static MongoDB* INSTANCE;
 
@@ -23,10 +24,10 @@ private:
 public:
     static MongoDB* getInstance();
     void connectDB(const std::string& hostname, const std::string& port, const std::string& databaseName, const std::string& username, const std::string& password);
-    void setCollection(const std::string& collectionName);
     void signup(const std::string& username, const std::string& pwd) noexcept(false);
     void login(const std::string& username, const std::string& pwd) noexcept(false);
     void uploadImage(const std::string& username, const std::string& description, const std::string& url, const std::list<std::string> tags);
+    bool likeImage(const std::string &username, const std::string &idImage, const bool like);
     std::string getImages(bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value>& query, const int& skip);
 
 };

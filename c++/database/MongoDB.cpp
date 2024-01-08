@@ -2,7 +2,7 @@
 
 MongoDB* MongoDB::INSTANCE;
 
- MongoDB::MongoDB() {
+MongoDB::MongoDB() {
     instance = new mongocxx::instance();
 }
 
@@ -17,14 +17,13 @@ void MongoDB::connectDB(const std::string &hostname, const std::string& port, co
     auto *uri = new mongocxx::uri("mongodb://"+username+":"+password+"@"+hostname+":"+port);
     auto *client = new mongocxx::client(*uri);
     database = (*client)[databaseName];
-}
 
-void MongoDB::setCollection(const std::string &collectionName) {
-     try{
-         collection = database[collectionName];
-     } catch (std::exception& e){
-         std::cout << e.what() << std::endl;
-     }
+    try{
+        userCollection = database["users"];
+        photosCollection = database["photos"];
+    } catch (std::exception& e){
+        std::cout << e.what() << std::endl;
+    }
 }
 
 void MongoDB::signup(const std::string& username, const std::string& pwd) noexcept(false){
@@ -33,7 +32,7 @@ void MongoDB::signup(const std::string& username, const std::string& pwd) noexce
                 bsoncxx::builder::basic::kvp("password", pwd)
             );
     try {
-         collection.insert_one(doc_value);
+         userCollection.insert_one(doc_value);
     } catch (mongocxx::bulk_write_exception& e) {
         throw e;
     }
@@ -44,7 +43,7 @@ void MongoDB::login(const std::string &username, const std::string &pwd) noexcep
             bsoncxx::builder::basic::kvp("username", username),
             bsoncxx::builder::basic::kvp("password", pwd)
     );
-    auto find_one_result = collection.find_one(doc_value);
+    auto find_one_result = userCollection.find_one(doc_value);
     if(!find_one_result){
         throw LoginException("User non presente");
     }
@@ -60,14 +59,31 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
             bsoncxx::builder::basic::kvp("username", username),
             bsoncxx::builder::basic::kvp("description", description),
             bsoncxx::builder::basic::kvp("url", url),
-            bsoncxx::builder::basic::kvp("tags", tags_array)
+            bsoncxx::builder::basic::kvp("tags", tags_array),
+            bsoncxx::builder::basic::kvp("likes", bsoncxx::builder::basic::array) //check here! se il bson array così si crea vuoto
     );
 
     try {
-        auto insert_one_result = collection.insert_one(doc_value);
+        auto insert_one_result = photosCollection.insert_one(doc_value);
     } catch (mongocxx::exception& e) {
         throw e;
     }
+ }
+
+ bool MongoDB::likeImage(const std::string &username, const std::string &idImage, const bool like) {
+    bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> doc_value = bsoncxx::builder::basic::make_document(
+            bsoncxx::builder::basic::kvp("_id", idImage) //check here! se la stringa è convertita in automatico in bsonobjectid
+    );
+
+    if(like){
+        //mettere l'update query con $addtoset
+    }
+    else{
+        //mettere l'update query con $pull
+    }
+
+    //auto update_one_result = photosCollection.update_one(doc_value, );
+    return true;
 
  }
 
@@ -78,7 +94,7 @@ std::string MongoDB::getImages(bsoncxx::view_or_value<bsoncxx::document::view, b
      //option.sort()
      option.limit(10);
      option.skip(skip);
-    auto result = collection.find(query, option);
+    auto result = photosCollection.find(query, option);
 
     for(auto r : result){
         std::cout << bsoncxx::to_json(r, bsoncxx::ExtendedJsonMode::k_relaxed);

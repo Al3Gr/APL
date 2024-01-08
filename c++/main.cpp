@@ -32,6 +32,7 @@ int main(){
     server.add_entrypoint("/login", "POST", apl::handler::login_handler);
     server.add_entrypoint("/upload", "POST", apl::handler::upload_image_handler);
     server.add_entrypoint("/get", "GET", apl::handler::get_image_handler);
+    server.add_entrypoint("/like", "PUT", apl::handler::like_handler);
     server.start();
 
     return EXIT_SUCCESS;
