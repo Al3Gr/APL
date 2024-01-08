@@ -92,7 +92,6 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
 
  }
 
- //TODO: field time
 std::string MongoDB::getImages(bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value>& query, const int &skip) {
      std::string json = "[";
      mongocxx::options::find option;

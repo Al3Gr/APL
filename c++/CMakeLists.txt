@@ -4,7 +4,7 @@ project(Progetto)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(Progetto
-        SocketTCP.h
+        socket/SocketTCP.h
         exceptions/SocketException.h
         minio-client/MinIOUploader.h
         minio-client/MinIOUploader.cpp
@@ -16,7 +16,8 @@ add_executable(Progetto
         handler/Handler.h
         server/Server.cpp
         server/Server.h
-        main.cpp)
+        main.cpp
+        socket/SocketTCP.cpp)
 
 find_package(unofficial-restbed CONFIG REQUIRED)
 find_package(CURL REQUIRED)
