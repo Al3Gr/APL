@@ -56,12 +56,14 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
      for(auto const& t : tags){
         tags_array.append(t);
      }
+     auto time = std::chrono::system_clock::now().time_since_epoch().count();
     bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> doc_value = bsoncxx::builder::basic::make_document(
             bsoncxx::builder::basic::kvp("username", username),
             bsoncxx::builder::basic::kvp("description", description),
             bsoncxx::builder::basic::kvp("url", url),
             bsoncxx::builder::basic::kvp("tags", tags_array),
-            bsoncxx::builder::basic::kvp("likes", likes) //check here! se il bson array così si crea vuoto
+            bsoncxx::builder::basic::kvp("likes", likes),
+            bsoncxx::builder::basic::kvp("time", time)
     );
 
     try {
@@ -94,11 +96,13 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
 std::string MongoDB::getImages(bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value>& query, const int &skip) {
      std::string json = "[";
      mongocxx::options::find option;
-     //option.sort()
+     bsoncxx::view_or_value<bsoncxx::document::view, bsoncxx::document::value> ordering = bsoncxx::builder::basic::make_document(
+             bsoncxx::builder::basic::kvp("time", -1)
+     );
      option.limit(10);
      option.skip(skip);
+     option.sort(ordering);
     auto result = photosCollection.find(query, option);
-
     for(auto r : result){
         std::cout << bsoncxx::to_json(r, bsoncxx::ExtendedJsonMode::k_relaxed);
         json.append(bsoncxx::to_json(r, bsoncxx::ExtendedJsonMode::k_relaxed));
