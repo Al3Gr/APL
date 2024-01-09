@@ -155,20 +155,24 @@ namespace apl::handler{
             session->close( restbed::UNAUTHORIZED, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             return;
         }
-
+        try {
         session->fetch( content_length, [ request, username ]( const std::shared_ptr< restbed::Session > session, const restbed::Bytes & body )
         {
             nlohmann::json requestJson = nlohmann::json::parse(body.data());
             std::string idImage = requestJson["id"];
             std::string like = requestJson["like"];
-            bool likeBoolean = like == "true";
+            bool likeBoolean = like == "1";
 
             MongoDB *mongoDb = MongoDB::getInstance();
             if(mongoDb->likeImage(username, idImage, likeBoolean))
                 session->close( restbed::OK, "Like", { { "Content-Length", "4"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
             else
                 session->close( restbed::BAD_REQUEST, "Errore", { { "Content-Length", "6"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
-        } );
+        } );}
+        catch (std::exception e){
+            cout << e.what();
+        }
     }
+
 }
 
