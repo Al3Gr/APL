@@ -18,6 +18,8 @@
     - tkinter (usata per la creazione dell'interfaccia grafica del analyzer.py)
     - matplotlib (usata per la rappresentazione grafica dei dati nell'analyzer.py)
 - **C#**
+  - Microsoft.Maui (usata per la realizzazione dell'interfaccia grafica)
+  - Newtonsoft.Json (usate per la gestione dei JSON)
 
 
 ### Installazione
@@ -36,7 +38,10 @@
     pip install -r requirements.txt
 
 - **C#**  
-    Utilizzare il gestore di pachetti _NuGet_
+    Utilizzare il gestore di pachetti _NuGet_, digitando il seguente comando:
+
+
+    nuget install "nome_libreria"
 
 ### Utilizzo
 
