@@ -32,6 +32,4 @@ public:
     bool getImage(const Aws::String &objectKey);
 
 };
-
-
-#endif MINIO_CLIENT_H
+#endif //MINIO_CLIENT_H

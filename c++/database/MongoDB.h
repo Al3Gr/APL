@@ -7,6 +7,7 @@
 #include <mongocxx/instance.hpp>
 #include <mongocxx/exception/bulk_write_exception.hpp>
 #include "../exceptions/LoginException.h"
+#include "../exceptions/SignupException.h"
 #include <nlohmann/json.hpp>
 
 
