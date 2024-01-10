@@ -19,7 +19,7 @@
     - matplotlib (usata per la rappresentazione grafica dei dati nell'analyzer.py)
 
 - **C#**
-  - Microsoft.Maui (piuà di una libreria, è un framework usato per la realizzazione dell'interfaccia grafica multipiattaforma)
+  - Microsoft.Maui (più di una libreria, è un framework usato per la realizzazione dell'interfaccia grafica multipiattaforma)
   - Newtonsoft.Json (usate per la gestione dei JSON)
 
 

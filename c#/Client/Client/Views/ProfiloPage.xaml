@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Client.Views.ProfiloPage"
+             xmlns:vm="clr-namespace:Client.Views.ViewModels"
+             Title="Profilo"
+             x:DataType="vm:ProfiloViewModel">
+
+    <Grid Margin="20">
+        <VerticalStackLayout x:Name="MasterStack">
+            
+            
+
+            <VerticalStackLayout x:Name="DatiStack" VerticalOptions="CenterAndExpand" Margin="40,0,40,0">
+
+                <Button Text="Disconnettiti" Command="{Binding Logout}" HorizontalOptions="Fill" Margin="0,20,0,0" Padding="15, 5" BackgroundColor="Orange"/>
+                
+                <Label Text="{Binding Username}"/>
+
+                <Entry Placeholder="Descrizione" Text="{Binding Description}" />
+
+                <Frame HeightRequest="150" WidthRequest="150" CornerRadius="75" BackgroundColor="White" HorizontalOptions="Center" VerticalOptions="Start" Padding="0" IsClippedToBounds="True">
+                    <Image Source="{Binding ImageSource}" Aspect="AspectFill" HeightRequest="150" WidthRequest="150"/>
+                </Frame>
+
+                <Button Text="Scegli immagine" Command="{Binding PickImage}" HorizontalOptions="Fill" Margin="0,20,0,0" Padding="15, 5" BackgroundColor="Orange"/>
+
+                <Button Text="Carica immagine" IsEnabled="{Binding IsNotLoading}" Command="{Binding Upload}" HorizontalOptions="Fill" Margin="0,20,0,0" Padding="15, 5" BackgroundColor="Orange"/>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+
+        <ActivityIndicator x:Name="ActivitySpinner" Color="Red" IsRunning="True" IsVisible="{Binding IsLoading}" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+    </Grid>
+</ContentPage>

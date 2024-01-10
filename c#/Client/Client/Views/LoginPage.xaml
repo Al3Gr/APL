@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Client.Views.LoginPage"
+             xmlns:vm="clr-namespace:Client.Views.ViewModels"
+             Title="Login"
+             x:DataType="vm:LoginViewModel">
+    
+    <Grid>
+        <Image x:Name="imageBackground" Aspect="AspectFill" HorizontalOptions="Fill" VerticalOptions="Fill" Opacity="0.5" />
+
+        <VerticalStackLayout x:Name="MasterStack">
+            <Grid Margin="40, 0" VerticalOptions="CenterAndExpand">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Image Grid.Column="1" x:Name="Icon" Source="icona.png" Margin="0,20,0,20" Aspect="AspectFit"/>
+            </Grid>
+
+            <VerticalStackLayout x:Name="DatiStack" VerticalOptions="CenterAndExpand" Margin="40,0,40,0">
+
+                <Entry Placeholder="Username" Text="{Binding Username}"/>
+
+                <Entry IsPassword="True" Placeholder="Password" Text="{Binding Password}" />
+
+                <Button Text="Accedi" IsEnabled="{Binding IsNotLoading}" Command="{Binding Login}" HorizontalOptions="Fill" Margin="0,20,0,0" Padding="15, 5" BackgroundColor="Orange"/>
+                
+                <Button Text="Registrati" IsEnabled="{Binding IsNotLoading}" Command="{Binding Signup}" HorizontalOptions="Fill" Margin="0,20,0,0" Padding="15, 5" BackgroundColor="Orange"/>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+
+        <ActivityIndicator x:Name="ActivitySpinner" Color="Red" IsRunning="True" IsVisible="{Binding IsLoading}" VerticalOptions="Center" HorizontalOptions="Center"/>
+        
+    </Grid>
+</ContentPage>

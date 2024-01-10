@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Client.Views.PostsPage"
+             xmlns:vm="clr-namespace:Client.Views.ViewModels"
+             xmlns:model="clr-namespace:Client.Models"
+             Title="PostsPage"
+             x:DataType="vm:PostsViewModel">
+
+    <Grid>
+        <CollectionView Margin="20, 0" ItemsSource="{Binding Posts}" >
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
+
+            </CollectionView.ItemsLayout>
+            <CollectionView.Header>
+
+                    <SearchBar Text="{Binding SearchQuery}"  HorizontalOptions="Fill" SearchCommand="{Binding Search}" TextColor="Black" BackgroundColor="White"/>
+
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:PhotoInfoModel">
+                    <Frame BackgroundColor="White" CornerRadius="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="400"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Label Text="{Binding username}" TextColor="Blue" FontSize="Medium" />
+
+                            <Image Grid.Row="1" Source="{Binding Image}" VerticalOptions="Fill" HorizontalOptions="Fill" Aspect="AspectFit" BackgroundColor="White"/>
+
+                            <Grid Grid.Row="2" ColumnSpacing="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <HorizontalStackLayout Grid.RowSpan="2" HorizontalOptions="Start">
+                                    <ImageButton WidthRequest="40" HeightRequest="40" VerticalOptions="Center" Source="{Binding LikeImageSource}" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:PostsViewModel}}, Path=LikePost}" CommandParameter="{Binding .}"/>
+                                    <Label Text="{Binding NLike, StringFormat='Mi piace: {0}'}" TextColor="Blue" VerticalOptions="Center" HorizontalOptions="Start"/>
+                                </HorizontalStackLayout>
+
+                                <Label Grid.Column="1" Text="{Binding TagsString, StringFormat='Tags: {0}'}" TextColor="Blue" FontSize="Small" />
+                                <Label Grid.Column="1" Grid.Row="1" Text="{Binding description, StringFormat='Descrizione: {0}'}" TextColor="Blue" FontSize="Small" />
+                            </Grid>
+
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <Button Text="Cerca di più..." HorizontalOptions="Fill" Command="{Binding SearchMore}" />
+            </CollectionView.Footer>
+        </CollectionView>
+
+        <ActivityIndicator x:Name="ActivitySpinner" Color="Red" IsRunning="True" IsVisible="{Binding IsLoading}" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+    </Grid>
+
+</ContentPage>
