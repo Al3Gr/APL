@@ -29,7 +29,6 @@ public:
     static MinIOUploader* getInstance();
     void connectToBucket(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName);
     bool putImage(const Aws::String &key, const Aws::String &filename);
-    bool getImage(const Aws::String &objectKey);
 
 };
 #endif //MINIO_CLIENT_H

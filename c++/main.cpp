@@ -26,8 +26,10 @@ int main(){
     Server server;
     server.set_server_port(server_port);
     server.set_server_threading(std::thread::hardware_concurrency());
+    // avvio la connessione con il server di mongoDB e il server di Minio
     server.connect_to_mongodb(host, port, database, username, password);
     server.connect_to_minio(host_minio, port_minio, keyId, keySecret, bucketName);
+    // setto gli endpoint su cui risponderà il server
     server.add_entrypoint("/signup", "POST", apl::handler::signup_handler);
     server.add_entrypoint("/login", "POST", apl::handler::login_handler);
     server.add_entrypoint("/upload", "POST", apl::handler::upload_image_handler);

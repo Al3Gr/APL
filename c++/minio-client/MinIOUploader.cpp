@@ -6,6 +6,7 @@ MinIOUploader::MinIOUploader() {
     Aws::InitAPI(this->options);
 }
 
+// mi collego al server Minio specificando dove si trova, le credenziali di accesso e il nome del bucket da usare
 void MinIOUploader::connectToBucket(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName) {
     Aws::Client::ClientConfiguration clientConfig;
 
@@ -17,10 +18,14 @@ void MinIOUploader::connectToBucket(const Aws::String &endpoint, const Aws::Stri
     credentials.SetAWSSecretKey(keySecret);
     this->client =std::make_shared<Aws::S3::S3Client>(credentials, clientConfig, Aws::Client::AWSAuthV4Signer::PayloadSigningPolicy(), false);
     this->bucketName = bucketName;
+    // creo il bucket
     createBucket();
+    // imposto la policy di accesso al bucket
     setBucketPolicy();
 }
 
+// Implemento il pattern Singleton in modo da avere una sola istanza della classe MinIOUploader da utilizzare per tutte le interazione
+// col bucket
 MinIOUploader* MinIOUploader::getInstance() {
     if(INSTANCE == nullptr){
         INSTANCE = new MinIOUploader();
@@ -28,10 +33,14 @@ MinIOUploader* MinIOUploader::getInstance() {
     return  INSTANCE;
 }
 
+// dealloco le risorse utilizzate
 MinIOUploader::~MinIOUploader(){
     Aws::ShutdownAPI(this->options);
 }
 
+// funzione usata per impostare la policy del bucket in modo da poter accedere ai file salvati in modo agevole
+// la funzione è privata in quanto la policy del bucket deve essere impostata solo durante la creazione
+// dell'istanza di Miniouploader
 bool MinIOUploader::setBucketPolicy() {
     Aws::String policy = "{\n"
                          "     \"Version\":\"2012-10-17\",\n"
@@ -49,6 +58,8 @@ bool MinIOUploader::setBucketPolicy() {
             Aws::MakeShared<Aws::StringStream>("");
     *request_body << policy;
 
+    // Creo la richiesta e la sottopongo al server
+    // Controllo il risultato della richiesta per capire se la policy è stata impostata correttamente
     Aws::S3::Model::PutBucketPolicyRequest request;
     request.SetBucket(this->bucketName);
     request.SetBody(request_body);
@@ -60,20 +71,25 @@ bool MinIOUploader::setBucketPolicy() {
                   << outcome.GetError().GetMessage() << std::endl;
     }
     else {
-        std::cout << "Set the following policy body for the bucket '" <<
-                  this->bucketName << "':" << std::endl << std::endl;
-        std::cout << policy << std::endl;
+        std::cout << "Policy setted for the bucket: " <<
+                  this->bucketName << "':" << std::endl;
     }
 
     return outcome.IsSuccess();
 }
 
+// funzione usata per la creazione del bucket
+// se esso è già presente non faccio nulla altrimenti lo creo
+// la funzione è privata in quanto l'eventuale creazione del bucket deve avvenire solo durante la creazione
+// dell'istanza di Miniouploader
 bool MinIOUploader::createBucket() {
 
+    // controllo se il bucket che si vuole creare sia già presente o meno
     Aws::S3::Model::HeadBucketRequest headReq;
     headReq.WithBucket(this->bucketName);
     auto outcome_head = client->HeadBucket(headReq);
     if(!outcome_head.IsSuccess()){
+        // entro qui dentro se il bucket non è creato e, di conseguenza, lo creo
         Aws::S3::Model::CreateBucketRequest request;
         request.SetBucket(this->bucketName);
 
@@ -95,12 +111,16 @@ bool MinIOUploader::createBucket() {
 
 }
 
+// funzione usata per caricare l'immagine specificata dal parametro filename
+// l'immagine verrà salavata nel bucket con la key specificata
 bool MinIOUploader::putImage(const Aws::String &key, const Aws::String &filename) {
     Aws::S3::Model::PutObjectRequest request;
     request.SetBucket(this->bucketName);
     request.SetKey(key);
 
     //Aws::FStream is used to upload the contents of the local file to the bucket.
+    // trasformo l'immagine in un IOStream che passo alla request
+    // dopodichè controllo se l'inserimento è andato a buon fine
     std::shared_ptr<Aws::IOStream> inputData =
             Aws::MakeShared<Aws::FStream>("SampleAllocationTag",
                                           filename.c_str(),
@@ -123,27 +143,6 @@ bool MinIOUploader::putImage(const Aws::String &key, const Aws::String &filename
         std::cout << "Added object '" << filename << "' to bucket '"
                   << this->bucketName << "'.";
     }
-
-    return outcome.IsSuccess();
-}
-
-bool MinIOUploader::getImage( const Aws::String &objectKey) {
-    Aws::S3::Model::GetObjectRequest request;
-    request.SetBucket(this->bucketName);
-    request.SetKey(objectKey);
-
-    Aws::S3::Model::GetObjectOutcome outcome = client->GetObject(request);
-    auto b = outcome.GetResult().GetBody().rdbuf();
-    if (!outcome.IsSuccess()) {
-        const Aws::S3::S3Error &err = outcome.GetError();
-        std::cerr << "Error: GetObject: " <<
-                  err.GetExceptionName() << ": " << err.GetMessage() << std::endl;
-    }
-    else {
-        std::cout << "Successfully retrieved '" << objectKey << "' from '"
-                  << this->bucketName << "'." << std::endl;
-    }
-
 
     return outcome.IsSuccess();
 }
