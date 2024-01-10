@@ -17,8 +17,9 @@
     - pymongo (usata per la comunicazione col database MongoDB)
     - tkinter (usata per la creazione dell'interfaccia grafica del analyzer.py)
     - matplotlib (usata per la rappresentazione grafica dei dati nell'analyzer.py)
+
 - **C#**
-  - Microsoft.Maui (usata per la realizzazione dell'interfaccia grafica)
+  - Microsoft.Maui (piuà di una libreria, è un framework usato per la realizzazione dell'interfaccia grafica multipiattaforma)
   - Newtonsoft.Json (usate per la gestione dei JSON)
 
 
