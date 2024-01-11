@@ -27,5 +27,4 @@ class Connection():
         response = ""
         for t in tags:
             response = response + t + "-"
-        
         self.conn.sendall(response.encode())

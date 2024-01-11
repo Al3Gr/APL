@@ -12,17 +12,14 @@ class MongoDB():
         except errors.ServerSelectionTimeoutError as se:
             raise se
 
-
     def addTags(self, tags):
-        for t in tags:
-            doc = self.__coll.find_one_and_update(
-                {"tag": t}, {"$inc": {"inference": 1}})
-            if (not doc):
-                self.__coll.insert_one({"tag": t, "inference": 1})
+        for key, value in tags.items():
+            self.__coll.insert_one({"tag": key, "percentage": value})
 
-    def getTags(self):
-        raw_tags = self.__coll.find()
+    def getTags(self, threshold):
+        pipeline = [{"$match": {"percentage" :{"$gt": threshold}}},{"$group": {"_id": "$tag", "count": {"$sum": 1}}}]
+        raw_tags = self.__coll.aggregate(pipeline)
         tags = {}
         for t in raw_tags:
-            tags.update({t["tag"]:t["inference"]})
+            tags[t["_id"]] = t["count"]
         return tags

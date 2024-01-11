@@ -6,10 +6,11 @@ import torch
 # La classe Tagger modella il tagger
 class Tagger():
 
-    def __init__(self, n_tags):
+    def __init__(self, n_tags, threshold):
         # In fase di creazione, oltre ad inizializzare la rete che si occuperà
         # dell'inferenza dell'immagine, setto anche quanti tag restituirà il tagger
         self.n_tags = n_tags
+        self.threshold = threshold
         self.tags = []
         self.model = alexnet(weights=AlexNet_Weights.DEFAULT)
         self.model.eval()
@@ -42,9 +43,11 @@ class Tagger():
         top_n_prob, top_n_catid = torch.topk(
             self.probabilities, self.n_tags)
 
-        tags = []
+        tags = {}
 
         for i in range(0, self.n_tags):
-            tags.append(categories[top_n_catid[i]])
+            print(f"{categories[top_n_catid[i]]}:{top_n_prob[i].item()*100}")
+            if (top_n_prob[i].item()*100) >= self.threshold:
+                tags[categories[top_n_catid[i]]] = top_n_prob[i].item()*100
 
         return tags

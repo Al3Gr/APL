@@ -1,3 +1,4 @@
+import sys
 import tkinter as tk
 from matplotlib import pyplot
 from matplotlib.figure import Figure 
@@ -32,15 +33,19 @@ class Analyzer(tk.Tk):
 
         # Creiamo i buttons che andranno inseriti nell'interfaccia
         # Per ognuno di essi, specifichiamo il frame di appartenenza, il titolo e il comando da eseguire
-        connect_button = tk.Button(first_frame, text="Collega al DB", command=self.connect_to_mongo)
-        connect_button.pack(side=tk.LEFT)
+        self.connect_button = tk.Button(first_frame, text="Collega al DB", command=self.connect_to_mongo)
+        self.connect_button.pack(side=tk.LEFT)
 
 
-        get_data_button = tk.Button(second_frame, text="Ottieni dati", command=self.get_data)
-        get_data_button.pack(side=tk.LEFT)
+        self.get_data_button = tk.Button(second_frame, text="Ottieni dati", command=self.get_data)
+        self.get_data_button.pack(side=tk.LEFT)
 
-        plot_button = tk.Button(third_frame, text="Plot", command=self.plot)
-        plot_button.pack(side=tk.LEFT)
+        self.textfield = tk.Text(second_frame, height=2, width=5)
+        self.textfield.insert("1.0","0")
+        self.textfield.pack(side=tk.RIGHT)
+
+        self.plot_button = tk.Button(third_frame, text="Plot", command=self.plot)
+        self.plot_button.pack(side=tk.LEFT)
 
         # Creiamo anche delle label con la quale restituire
         # delle informazioni sull'esito delle varie operazioni all'utente
@@ -77,12 +82,15 @@ class Analyzer(tk.Tk):
         # In questa funzione ottengo i tag dal db e notifico l'utente sul corretto
         # ottenimento tramite la relativa label
         try:
-            self.tags = self.mongoDB.getTags()
+            threshold = int(self.textfield.get("1.0", "end"))
+            self.tags = self.mongoDB.getTags(threshold)
             self.get_label.configure(fg="green", text="Dati ottenuti")
         except AttributeError as ae:
             # In caso di errore nell'ottenimento dei tag
             # notifico l'utente attraverso questa label
             self.get_label.configure(fg="red", text="Dati non ottenuti")
+        except ValueError as ve:
+            self.get_label.configure(fg="red", text="Inserisci un valore numerico")
 
     def plot(self):
         # In questa funzione plotto, come bar chart, i dati ottenuti
@@ -93,10 +101,10 @@ class Analyzer(tk.Tk):
             figure = Figure(figsize=(5, 5), dpi=100)
 
             # create FigureCanvasTkAgg object
-            figure_canvas = FigureCanvasTkAgg(figure, self)
+            self.figure_canvas = FigureCanvasTkAgg(figure, self)
 
             # create the toolbar
-            NavigationToolbar2Tk(figure_canvas, self)
+            self.toolbar = NavigationToolbar2Tk(self.figure_canvas, self)
 
             # create axes
             axes = figure.add_subplot()
@@ -105,9 +113,10 @@ class Analyzer(tk.Tk):
             # create the barchart
             axes.barh(keys, values)
             axes.set_title('Tags')
-            axes.set_xlabel('Popularity')
+            axes.set_xlabel('Occurance')
 
-            figure_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+            self.figure_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
             self.plot_label.configure(text="", fg="green")
         except AttributeError as ae:
             # Notifico l'utente che non vi sono ancora dati da elaborare
