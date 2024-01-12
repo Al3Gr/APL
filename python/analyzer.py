@@ -1,6 +1,4 @@
-import sys
 import tkinter as tk
-from matplotlib import pyplot
 from matplotlib.figure import Figure 
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, 
 NavigationToolbar2Tk) 
@@ -61,6 +59,8 @@ class Analyzer(tk.Tk):
 
     def connect_to_mongo(self):
         # In questa funzione ci colleghiamo al db dal quale ottenere i dati
+        # Leggo il file di configurazione per sapere a quale database collegarmi, quali siano le credenziali di accesso
+        # e la collezione da usare
         config = configparser.ConfigParser()
         config.read("config/config.ini")
 
@@ -71,6 +71,8 @@ class Analyzer(tk.Tk):
         DATABASE = config.get('MongoDB', 'Database')
         COLLECTION = config.get('MongoDB', 'Collection')
 
+        # Mi collego al db e se tutto va bene lo segnalo all'utente tramite una label (scritta in verde)
+        # Se il collegamento non va a buon fine la scritta nella label sarà di colore rosso
         try:
             self.mongoDB = MongoDB(HOSTNAME, PORT, USERNAME, PASSWORD, DATABASE, COLLECTION)
             self.connect_label.configure(fg="green", text="Connessione riuscita")
@@ -81,41 +83,46 @@ class Analyzer(tk.Tk):
     def get_data(self):
         # In questa funzione ottengo i tag dal db e notifico l'utente sul corretto
         # ottenimento tramite la relativa label
-        try:
-            threshold = int(self.textfield.get("1.0", "end"))
-            self.tags = self.mongoDB.getTags(threshold)
-            self.get_label.configure(fg="green", text="Dati ottenuti")
-        except AttributeError as ae:
-            # In caso di errore nell'ottenimento dei tag
-            # notifico l'utente attraverso questa label
-            self.get_label.configure(fg="red", text="Dati non ottenuti")
-        except ValueError as ve:
+        threshold = self.textfield.get("1.0", "end")
+        # Verifico se il valore inserito sia numerico; nel caso non lo fosse lo notifico all'utente
+        if threshold.strip().isdigit():
+            try:
+                # Ottengo i dati dal db
+                self.tags = self.mongoDB.getTags(int(threshold))
+                self.get_label.configure(fg="green", text="Dati ottenuti")
+            except AttributeError as ae:
+                # In caso di errore nell'ottenimento dei tag
+                # notifico l'utente attraverso questa label
+                self.get_label.configure(fg="red", text="Dati non ottenuti")
+        else:
             self.get_label.configure(fg="red", text="Inserisci un valore numerico")
 
     def plot(self):
-        # In questa funzione plotto, come bar chart, i dati ottenuti
+        # In questa funzione plotto, come bar-chart, i dati ottenuti
         try:
             keys = list(self.tags.keys())
             values = list(self.tags.values())
 
             figure = Figure(figsize=(5, 5), dpi=100)
 
-            # create FigureCanvasTkAgg object
+            # creo la canvas su cui verrà plottato il grafico
             self.figure_canvas = FigureCanvasTkAgg(figure, self)
 
-            # create the toolbar
+            # creato la toolbar da associare al grafico
             self.toolbar = NavigationToolbar2Tk(self.figure_canvas, self)
 
-            # create axes
+            # creo gli assi
             axes = figure.add_subplot()
             axes.grid(visible=True, color="grey", alpha=0.2)
 
-            # create the barchart
+            # creo gli assi x-y assegnado loro i valori: y = keys, x = values
             axes.barh(keys, values)
+            # imposto un nome per il grafico
             axes.set_title('Tags')
+            # imposto un nome per l'asse delle ascisse
             axes.set_xlabel('Occurance')
 
-
+            # Inserisco il grafico nell'interfaccia
             self.figure_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
             self.plot_label.configure(text="", fg="green")
         except AttributeError as ae:
