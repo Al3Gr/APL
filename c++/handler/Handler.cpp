@@ -107,15 +107,19 @@ namespace apl::handler{
                 tags.emplace_front(token_tag);
                 token_tag = strtok(nullptr, delimiter);
             }
-            // ottengo l'istanza del Bucket Minio e salvo l'immagine scritta in RAM all'interno del bucket
-            MinIOUploader *minio = MinIOUploader::getInstance();
-            std::string key = to_string(hasher(username+image))+".jpeg";
-            minio->putImage(Aws::String(key), "file.jpeg");
-            // Carico l'immagine nel database e restituisco codice 200 all'utente per dirgli che l'upload è andato bene
-            MongoDB *mongoDb = MongoDB::getInstance();
             try {
+                // ottengo l'istanza del Bucket Minio e salvo l'immagine scritta in RAM all'interno del bucket
+                MinIOUploader *minio = MinIOUploader::getInstance();
+                std::string key = to_string(hasher(username+image))+".jpeg";
+                minio->putImage(Aws::String(key), "file.jpeg");
+                // Carico l'immagine nel database e restituisco codice 200 all'utente per dirgli che l'upload è andato bene
+                MongoDB *mongoDb = MongoDB::getInstance();
                 mongoDb->uploadImage(username, description, "http://localhost:9000/apl/"+key, tags);
-            } catch (UploadException& e){
+            }catch (MinioException& e){
+                session->close( restbed::INTERNAL_SERVER_ERROR, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+                return;
+            }
+            catch (UploadException& e){
                 session->close( restbed::INTERNAL_SERVER_ERROR, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
                 return;
             }

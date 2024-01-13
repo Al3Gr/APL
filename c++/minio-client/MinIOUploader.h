@@ -13,6 +13,7 @@
 #include <aws/core/auth/AWSCredentials.h>
 #include <aws/core/utils/memory/stl/AWSString.h>
 #include <aws/core/http/HttpClient.h>
+#include "../exceptions/MinioException.h"
 
 class MinIOUploader {
 private:
@@ -22,13 +23,13 @@ private:
 
     static MinIOUploader* INSTANCE;
     MinIOUploader();
-    bool createBucket();
-    bool setBucketPolicy();
+    void createBucket() noexcept(false);
+    void setBucketPolicy() noexcept(false);
 public:
     ~MinIOUploader();
     static MinIOUploader* getInstance();
-    void connectToBucket(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName);
-    bool putImage(const Aws::String &key, const Aws::String &filename);
+    void connectToBucket(const Aws::String &endpoint, const Aws::String &keyId, const Aws::String &keySecret, const Aws::String &bucketName) noexcept(false);
+    void putImage(const Aws::String &key, const Aws::String &filename) noexcept(false);
 
 };
 #endif //MINIO_CLIENT_H

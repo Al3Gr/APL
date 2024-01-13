@@ -44,5 +44,10 @@ void Server::start() {
 // mi collego al server di Minio specificando l'host e la porta su cui è in ascolto, le credenziali di accesso e il nome del bucket da utilizzare
 void Server::connect_to_minio(const std::string& hostname, const std::string& port, const std::string& keyId, const std::string &keySecret, const std::string &bucketName){
     MinIOUploader *minIoUploader = MinIOUploader::getInstance();
-    minIoUploader->connectToBucket(Aws::String(hostname+":"+port), Aws::String(keyId), Aws::String(keySecret), Aws::String(bucketName));
+    try {
+        minIoUploader->connectToBucket(Aws::String(hostname+":"+port), Aws::String(keyId), Aws::String(keySecret), Aws::String(bucketName));
+    } catch (MinioException& e){
+        throw e;
+    }
+
 }
