@@ -19,7 +19,8 @@ add_executable(Progetto
         main.cpp
         socket/SocketTCP.cpp
         exceptions/SignupException.h
-        exceptions/SignupException.h)
+        exceptions/SignupException.h
+        exceptions/UploadException.h)
 
 find_package(unofficial-restbed CONFIG REQUIRED)
 find_package(CURL REQUIRED)

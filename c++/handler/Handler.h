@@ -6,6 +6,7 @@
 #include "../exceptions/SocketException.h"
 #include "../exceptions/LoginException.h"
 #include "../exceptions/SignupException.h"
+#include "../exceptions/UploadException.h"
 #include "../minio-client/MinIOUploader.h"
 #include "restbed"
 #include <nlohmann/json.hpp>

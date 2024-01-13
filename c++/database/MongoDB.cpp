@@ -80,7 +80,7 @@ void MongoDB::uploadImage(const std::string &username, const std::string &descri
     try {
         auto insert_one_result = photosCollection.insert_one(doc_value);
     } catch (mongocxx::exception& e) {
-        throw e;
+        throw UploadException("Errore nel caricamento");
     }
  }
 

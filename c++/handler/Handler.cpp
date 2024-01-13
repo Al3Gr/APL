@@ -113,7 +113,12 @@ namespace apl::handler{
             minio->putImage(Aws::String(key), "file.jpeg");
             // Carico l'immagine nel database e restituisco codice 200 all'utente per dirgli che l'upload è andato bene
             MongoDB *mongoDb = MongoDB::getInstance();
-            mongoDb->uploadImage(username, description, "http://localhost:9000/apl/"+key, tags);
+            try {
+                mongoDb->uploadImage(username, description, "http://localhost:9000/apl/"+key, tags);
+            } catch (UploadException& e){
+                session->close( restbed::INTERNAL_SERVER_ERROR, e.what(), { { "Content-Length", to_string(strlen(e.what()))}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
+                return;
+            }
             session->close( restbed::OK, "Uploaded", { { "Content-Length", "8"}, {"Content-Type", "text/html"},{ "Connection", "close" } } );
         } );
     }

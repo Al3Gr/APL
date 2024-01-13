@@ -8,6 +8,7 @@
 #include <mongocxx/exception/bulk_write_exception.hpp>
 #include "../exceptions/LoginException.h"
 #include "../exceptions/SignupException.h"
+#include "../exceptions/UploadException.h"
 #include <nlohmann/json.hpp>
 
 
