@@ -94,7 +94,7 @@ namespace Client.Models
         }
 
 
-        //metodo per evitare che il parsing del json dia errore a causa di proprietà in più date dal server
+        //attributo per evitare che il parsing del json dia errore a causa di proprietà in più date dal server
         [JsonExtensionData]
         public IDictionary<string, JToken> AdditionalData { get; set; }
     }
