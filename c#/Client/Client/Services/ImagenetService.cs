@@ -26,7 +26,7 @@ namespace Client.Services
 
         private List<string> listaTag = new List<string>();
 
-        public ImagenetService()
+        private ImagenetService()
         {
             using (Stream stream = GetStreamFromFile("imagenet_classes.txt"))
             {
