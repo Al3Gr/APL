@@ -21,6 +21,11 @@ namespace Client.Services
             }
         }
 
+        //solo per sovrascrivere il costruttore di default che è pubblico
+        private UserService()
+        {
+        }
+
         //il token per le richieste successive al login/signup
         public string Token { get; set; }
 
