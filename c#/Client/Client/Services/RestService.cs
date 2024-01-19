@@ -27,7 +27,7 @@ namespace Client.Services
 
         private readonly HttpClient _client;
 
-        public RestService()
+        private RestService()
         {
             _client = new HttpClient()
             {
